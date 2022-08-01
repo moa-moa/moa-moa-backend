@@ -1,0 +1,1 @@
+docker run --name local-mysql -e MYSQL_ROOT_PASSWORD=moamoa801 -e MYSQL_DATABASE=test -p 3316:3306 -d mysql:8.0.29

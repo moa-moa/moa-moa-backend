@@ -1,0 +1,97 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id     String @id @default(uuid())
+  email  String @unique
+  name   String
+  status String
+  Avatar Image?
+
+  UserLikedClub   UserLikedClub[]
+  UserJoinedClub  UserJoinedClub[]
+  UserCreatedClub UserCreatedClub[]
+}
+
+model Category {
+  id        Int    @id @default(autoincrement())
+  title     String
+  backColor String
+  Club      Club[]
+}
+
+model Club {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  owner       String
+  isAvailable Boolean
+  max         Int
+  Category    Category @relation(fields: [categoryId], references: [id])
+  categoryId  Int
+
+  ClubImage       ClubImage[]
+  UserLikedClub   UserLikedClub[]
+  UserJoinedClub  UserJoinedClub[]
+  UserCreatedClub UserCreatedClub[]
+}
+
+model ClubImage {
+  Image   Image @relation(fields: [imageId], references: [id], onDelete: Cascade)
+  imageId Int
+  Club    Club  @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  clubId  Int
+
+  @@id([imageId, clubId])
+}
+
+model Image {
+  id       Int       @id @default(autoincrement())
+  type     ImageType @default(USER)
+  imageUrl String
+
+  ClubImage ClubImage[]
+  User      User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String?     @unique
+}
+
+enum ImageType {
+  USER
+  CLUB
+}
+
+model UserLikedClub {
+  User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  Club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  clubId Int
+
+  @@id([userId, clubId])
+}
+
+model UserJoinedClub {
+  User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  Club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  clubId Int
+
+  @@id([userId, clubId])
+}
+
+model UserCreatedClub {
+  User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  Club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  clubId Int
+
+  @@id([userId, clubId])
+}

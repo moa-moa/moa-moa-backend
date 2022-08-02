@@ -15,12 +15,11 @@ model User {
   email  String @unique
   name   String
   status String
-  avatar Image  @relation(fields: [imageId], references: [id])
+  Avatar Image?
 
   UserLikedClub   UserLikedClub[]
   UserJoinedClub  UserJoinedClub[]
   UserCreatedClub UserCreatedClub[]
-  imageId         Int
 }
 
 model Category {
@@ -47,9 +46,9 @@ model Club {
 }
 
 model ClubImage {
-  Image   Image @relation(fields: [imageId], references: [id])
+  Image   Image @relation(fields: [imageId], references: [id], onDelete: Cascade)
   imageId Int
-  Club    Club  @relation(fields: [clubId], references: [id])
+  Club    Club  @relation(fields: [clubId], references: [id], onDelete: Cascade)
   clubId  Int
 
   @@id([imageId, clubId])
@@ -57,11 +56,12 @@ model ClubImage {
 
 model Image {
   id       Int       @id @default(autoincrement())
-  imageUrl String
   type     ImageType @default(USER)
+  imageUrl String
 
   ClubImage ClubImage[]
-  User      User[]
+  User      User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String?     @unique
 }
 
 enum ImageType {
@@ -70,27 +70,27 @@ enum ImageType {
 }
 
 model UserLikedClub {
-  User   User   @relation(fields: [userId], references: [id])
+  User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
-  Club   Club   @relation(fields: [clubId], references: [id])
+  Club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
   clubId Int
 
   @@id([userId, clubId])
 }
 
 model UserJoinedClub {
-  User   User   @relation(fields: [userId], references: [id])
+  User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
-  Club   Club   @relation(fields: [clubId], references: [id])
+  Club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
   clubId Int
 
   @@id([userId, clubId])
 }
 
 model UserCreatedClub {
-  User   User   @relation(fields: [userId], references: [id])
+  User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
-  Club   Club   @relation(fields: [clubId], references: [id])
+  Club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
   clubId Int
 
   @@id([userId, clubId])

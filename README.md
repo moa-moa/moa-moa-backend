@@ -25,6 +25,8 @@ $ npm install
 # Connect localDB(MySQL) using docker
 sh run-mysql.sh
 ```
+## 🚩 DB Schema (Latest Version)
+https://dbdiagram.io/d/62e8bae2f31da965e85cc2a0
 
 ## 🚩 Running the app
 

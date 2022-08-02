@@ -1,4 +1,6 @@
 .env
+/prisma/dbml/
+
 # compiled output
 /dist
 /node_modules

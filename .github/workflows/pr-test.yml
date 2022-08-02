@@ -1,0 +1,54 @@
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: Test on PR
+
+on:
+  pull_request:
+    branches: ['main']
+
+env:
+  DATABASE_URL: mysql://root:root@127.0.0.1/MOAMOA
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0.29
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: MOAMOA
+        ports:
+          - 3306:3306
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js 16
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'npm'
+
+      - name: verify MySQL connection from host
+        run: netstat -ant
+
+      - name: install node modules && test # 테스트를 돌릴 액션
+        run: |
+          npm ci
+
+      - name: Apply migrations reset
+        run: npx prisma migrate reset --force
+
+      - name: Run prettier
+        run: npm run format:check
+
+      - name: Run eslint
+        run: npm run lint:check
+
+      - name: Build Project
+        run: npm run build --if-present
+
+      - name: Test the project
+        run: npm run test

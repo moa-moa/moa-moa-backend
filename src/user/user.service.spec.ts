@@ -22,13 +22,6 @@ describe('UserService', () => {
     expect(service).toBeDefined();
   });
 
-  describe('findUsers', () => {
-    it('should return users', async () => {
-      const users = await service.findUsers();
-      expect(users).toBeInstanceOf(Array);
-    });
-  });
-
   describe('createUser', () => {
     it('should be create a user with valid data', async () => {
       const mockData = validMockUser();
@@ -38,6 +31,12 @@ describe('UserService', () => {
     });
   });
 
+  describe('findUsers', () => {
+    it('should return users', async () => {
+      const users = await service.findUsers();
+      expect(users).toBeInstanceOf(Array);
+    });
+  });
   describe('updateUser', () => {
     it('should be update a user with valid data', async () => {
       const mockUpdateData = validMockUpdateUser();

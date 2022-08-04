@@ -13,7 +13,7 @@ CREATE TABLE `User` (
 -- CreateTable
 CREATE TABLE `Category` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `title` VARCHAR(191) NOT NULL,
+    `name` VARCHAR(191) NOT NULL,
     `backColor` VARCHAR(191) NOT NULL,
 
     PRIMARY KEY (`id`)

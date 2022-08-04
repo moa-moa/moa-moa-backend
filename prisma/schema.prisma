@@ -27,7 +27,7 @@ model User {
 
 model Category {
   id        Int    @id @default(autoincrement())
-  title     String
+  name      String
   backColor String
   Club      Club[]
 }

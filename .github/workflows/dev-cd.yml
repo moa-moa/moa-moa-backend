@@ -1,0 +1,66 @@
+name: Dev CD
+
+on:
+  push:
+    branches: [main]
+
+env:
+  PROJECT_ID: moa-moa-backend
+  GCP_REGION: asia-northeast3
+  ARTIFACT_REGISTRY: moa-moa-backend-art
+  SERVICE_NAME: moa-moa-backend-run
+  DOCKER_IMAGE_NAME: asia-northeast3-docker.pkg.dev
+ IMAGE_NAME: test-product-img
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  publish-to-gcp:
+    name: Publish to Artifact Registry and Cloud Run
+    runs-on: ubuntu-latest
+    environment: development
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      #gcloud 설정
+      - uses: google-github-actions/setup-gcloud@master
+        with:
+          service_account_key: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+          project_id: ${{ env.PROJECT_ID }}
+
+      #사용자 인증설정
+      - name: Configure Docker Client
+        run: |-
+          gcloud auth configure-docker --quiet ${{ env.DOCKER_IMAGE_NAME }}
+
+      #저장소 명 저장
+      - name: Output ArtifcatRegistry URL
+        id: vars
+        run: echo ::set-output name=DOCKER_IMG_NAME::$DOCKER_IMAGE_NAME/$PROJECT_ID/$ARTIFACT_REGISTRY/$SERVICE_NAME:latest
+
+      #저장명 확인
+      - name: Test URL
+        run: echo ${{ steps.vars.outputs.DOCKER_IMG_NAME }}
+
+      #이미지 말기
+      - name: Build Docker Image
+        run: docker build -t ${{ steps.vars.outputs.DOCKER_IMG_NAME }} .
+
+      #도커 이미지들 체크
+      - name: Docker Images Check
+        run: docker images
+
+      #도커이미지 올리기
+      - name: Push Docker Image
+        run: docker push ${{ steps.vars.outputs.DOCKER_IMG_NAME }}
+
+      #Cloud Run 배포
+      - name: Deploy to Cloud Run.
+        uses: google-github-actions/deploy-cloudrun@main
+        with:
+          service: ${{ env.SERVICE_NAME }}#Cloud Run service name
+          region: ${{ env.GCP_REGION }}
+          image: ${{ steps.vars.outputs.DOCKER_IMG_NAME }}

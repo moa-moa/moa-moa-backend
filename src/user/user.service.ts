@@ -12,6 +12,27 @@ export class UserService {
     return this.prisma.user.findMany();
   }
 
+  findUserById(id: string): Promise<User> {
+    return this.prisma.user.findUnique({ where: { id } });
+  }
+
+  async findByProviderIdOrSave(data: CreateUserDto) {
+    const user = await this.prisma.user.upsert({
+      where: {
+        id: data.id,
+      },
+      update: {},
+      create: {
+        id: data.id,
+        provider: data.provider,
+        email: data.email,
+        name: data.name,
+      },
+    });
+
+    return user;
+  }
+
   async createUser(createDto: CreateUserDto): Promise<User> {
     return await this.prisma.user.create({ data: createDto });
   }

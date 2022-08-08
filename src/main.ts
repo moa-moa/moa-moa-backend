@@ -18,8 +18,10 @@ async function bootstrap() {
       transform: true,
     }),
   );
-
-  await app.listen(3000);
+  const port =  parseInt(process.env.PORT) || 8080;
+  await app.listen(port, () => {
+    console.log('Hello world listening on port', port);
+  });
 }
 bootstrap();
 

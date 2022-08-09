@@ -9,7 +9,6 @@ export class CategoryService {
   constructor(private readonly prisma: PrismaService) {}
 
   findCategories(options?: Prisma.CategoryFindManyArgs): Promise<Category[]> {
-    console.log(options);
     const query: Prisma.CategoryFindManyArgs = {};
 
     if (options?.include) {

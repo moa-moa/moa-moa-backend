@@ -25,7 +25,7 @@ CREATE TABLE `Club` (
     `title` VARCHAR(191) NOT NULL,
     `description` VARCHAR(191) NOT NULL,
     `owner` VARCHAR(191) NOT NULL,
-    `isAvailable` BOOLEAN NOT NULL DEFAULT true;
+    `isAvailable` BOOLEAN NOT NULL DEFAULT true,
     `max` INTEGER NULL,
     `categoryId` INTEGER NOT NULL,
 

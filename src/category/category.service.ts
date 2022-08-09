@@ -1,4 +1,4 @@
-import { ConsoleLogger, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Category, Prisma } from '@prisma/client';
 import { PrismaService } from '../common/prisma.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -9,7 +9,6 @@ export class CategoryService {
   constructor(private readonly prisma: PrismaService) {}
 
   findCategories(options?: Prisma.CategoryFindManyArgs): Promise<Category[]> {
-    console.log(options);
     const query: Prisma.CategoryFindManyArgs = {};
 
     if (options?.include) {

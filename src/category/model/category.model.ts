@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Club } from '@prisma/client';
 
 export class Category {
   @ApiProperty({ description: 'id' })
@@ -10,7 +9,4 @@ export class Category {
 
   @ApiProperty({ description: '카테고리 배경 색상코드' })
   backColor: string;
-
-  @ApiProperty({ description: '속한 Club' })
-  Club?: Club[];
 }

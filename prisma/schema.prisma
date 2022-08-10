@@ -15,11 +15,11 @@ datasource db {
 }
 
 model User {
-  id     String @id @default(uuid())
+  id       String @id @default(uuid())
   provider String
-  email  String @unique
-  name   String
-  Avatar Image?
+  email    String @unique
+  name     String
+  Avatar   Image?
 
   UserLikedClub   UserLikedClub[]
   UserJoinedClub  UserJoinedClub[]
@@ -38,8 +38,8 @@ model Club {
   title       String
   description String
   owner       String
-  isAvailable Boolean
-  max         Int
+  isAvailable Boolean  @default(true)
+  max         Int?
   Category    Category @relation(fields: [categoryId], references: [id])
   categoryId  Int
 

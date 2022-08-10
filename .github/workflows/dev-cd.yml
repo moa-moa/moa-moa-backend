@@ -34,15 +34,16 @@ jobs:
         run: echo ${{ env.DOCKER_IMAGE_NAME }}
 
       #gcloud 설정
-      - uses: google-github-actions/setup-gcloud@v0.2.0
-        with:
-          service_account_key: ${{ secrets.SERVICE_ACCOUNT_KEY }}
-          project_id: ${{ env.PROJECT_ID }}
+      #    - uses: google-github-actions/setup-gcloud@v0.2.0
+      #     with:
+      #      service_account_key: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      #     project_id: ${{ env.PROJECT_ID }}
 
       - id: 'auth'
         uses: 'google-github-actions/auth@v0'
         with:
           credentials_json: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+          project_id: ${{ env.PROJECT_ID }}
 
       #사용자 인증설정
       - name: Configure Docker Client
@@ -57,14 +58,14 @@ jobs:
       - name: Docker Images Check
         run: docker images
 
-      #도커이미지 올리기
+      #도커이미지 artifact에 올리기
       - name: Push Docker Image
         run: docker push ${{ env.DOCKER_IMAGE_NAME }}
 
       #Cloud Run 배포
       - name: Deploy to Cloud Run.
         id: deploy
-        uses: google-github-actions/deploy-cloudrun@main
+        uses: google-github-actions/deploy-cloudrun@v0
         with:
           service: ${{ env.SERVICE_NAME }} #Cloud Run service name
           region: ${{ env.GCP_REGION }}

@@ -11,7 +11,7 @@ env:
   GCP_REGION: asia-northeast3
   DOCKER_REPOSITORY: asia-northeast3-docker.pkg.dev
   ARTIFACT_REGISTRY: moa-moa-backend-art
-  SERVICE_NAME: moa-moa-backend-run
+  SERVICE_NAME: moa-single-test
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:

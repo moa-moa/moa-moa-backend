@@ -70,5 +70,5 @@ jobs:
           service: ${{ env.SERVICE_NAME }} #Cloud Run service name
           region: ${{ env.GCP_REGION }}
           image: ${{ env.DOCKER_IMAGE_NAME }}
-          credentials: ${{ secrets.SERVICE_ACCOUNT_KEY }}
-          env_vars: DATABASE_URL=${{ secrets.DEV_DATABASE_URL }}
+          credentials: ${{ secrets.SERVICE_ACCOUNT_KEY}}
+          env_vars: DATABASE_URL=${{ secrets.STG_DATABASE_URL }}

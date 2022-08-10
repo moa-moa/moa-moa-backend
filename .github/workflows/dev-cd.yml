@@ -11,7 +11,7 @@ env:
   GCP_REGION: asia-northeast3
   DOCKER_REPOSITORY: asia-northeast3-docker.pkg.dev
   ARTIFACT_REGISTRY: moa-moa-backend-art
-  SERVICE_NAME: moa-single-test
+  SERVICE_NAME: moa-single-test2
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -34,15 +34,9 @@ jobs:
         run: echo ${{ env.DOCKER_IMAGE_NAME }}
 
       #gcloud 설정
-      #    - uses: google-github-actions/setup-gcloud@v0.2.0
-      #     with:
-      #      service_account_key: ${{ secrets.SERVICE_ACCOUNT_KEY }}
-      #     project_id: ${{ env.PROJECT_ID }}
-
-      - id: 'auth'
-        uses: 'google-github-actions/auth@v0'
+      - uses: google-github-actions/setup-gcloud@v0.2.0
         with:
-          credentials_json: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+          service_account_key: ${{ secrets.SERVICE_ACCOUNT_KEY }}
           project_id: ${{ env.PROJECT_ID }}
 
       #사용자 인증설정

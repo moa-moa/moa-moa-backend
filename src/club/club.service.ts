@@ -14,8 +14,8 @@ export class ClubService {
   findClubById(id: number) {
     return this.prisma.club.findUnique({ where: { id } });
   }
-  async createClub(createClubDto: CreateClubDto): Promise<Club> {
-    return await this.prisma.club.create({ data: createClubDto });
+  async createClub(createClubDto: CreateClubDto) {
+    return 'test';
   }
   async updateClub(id: number, updateClubDto: UpdateClubDto) {
     return await this.prisma.club.update({

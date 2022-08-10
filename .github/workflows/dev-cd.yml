@@ -1,8 +1,8 @@
-name: Dev CD
+name: Dev Deploy Test CD
 
 on:
   push:
-    branches: [main]
+    branches: [main, deploy_test]
 
 env:
   PROJECT_ID: moa-moa-backend

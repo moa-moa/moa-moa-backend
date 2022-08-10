@@ -39,6 +39,11 @@ jobs:
           service_account_key: ${{ secrets.SERVICE_ACCOUNT_KEY }}
           project_id: ${{ env.PROJECT_ID }}
 
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v0'
+        with:
+          credentials_json: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+
       #사용자 인증설정
       - name: Configure Docker Client
         run: |-

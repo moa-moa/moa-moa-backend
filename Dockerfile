@@ -35,8 +35,8 @@ COPY --chown=node:node package*.json ./
 COPY --chown=node:node --from=development /usr/src/app/node_modules ./node_modules
 
 COPY --chown=node:node . .
-
 # Run the build command which creates the production bundle
+RUN npm run prisma:generate
 RUN npm run build
 
 # Set NODE_ENV environment variable
@@ -44,6 +44,7 @@ ENV NODE_ENV production
 
 # Running `npm ci` removes the existing node_modules directory and passing in --only=production ensures that only the production dependencies are installed. This ensures that the node_modules directory is as optimized as possible
 RUN npm ci --only=production && npm cache clean --force
+RUN npm run prisma:generate
 
 USER node
 
@@ -57,6 +58,15 @@ FROM node:18-alpine As production
 COPY --chown=node:node --from=build /usr/src/app/node_modules ./node_modules
 COPY --chown=node:node --from=build /usr/src/app/dist ./dist
 
+# copy for migration deploy
+COPY --chown=node:node --from=build /usr/src/app/prisma ./prisma
+COPY --chown=node:node --from=build /usr/src/app/docker-bootstrap-app.sh ./docker-bootstrap-app.sh
+
+RUN chmod +x ./docker-bootstrap-app.sh
+
+ENV DATABASE_URL "mysql://root:moamoa801@34.64.230.89:3306/test"
+
 # Start the server using the production build
-CMD [ "node", "dist/main.js" ]
+
+ENTRYPOINT ["./docker-bootstrap-app.sh"]
 

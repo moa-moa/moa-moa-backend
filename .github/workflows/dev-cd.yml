@@ -1,4 +1,4 @@
-name: Dev Deploy Test CD1
+name: Dev Deploy Test CD
 
 on:
   push:

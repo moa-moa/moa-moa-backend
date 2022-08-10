@@ -16,4 +16,14 @@ export class CategoryController {
   findCategories() {
     return this.categoryService.findCategories();
   }
+
+  @ApiOperation({
+    summary: '카테고리 목록 조회2',
+    description: 'Cateogry 모델 전체를 조회합니다.',
+  })
+  @ApiOkResponse({ type: [Category] })
+  @Get('/1')
+  findCategory() {
+    return this.categoryService.findCategories();
+  }
 }

@@ -3,7 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, Profile, VerifyCallback } from 'passport-google-oauth20';
 import * as dotenv from "dotenv";
 
-dotenv.config({ path: __dirname+'../../.env' });
+dotenv.config({ path: __dirname+'/../../.env' });
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor() {

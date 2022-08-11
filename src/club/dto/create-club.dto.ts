@@ -20,6 +20,11 @@ export class CreateClubDto {
 
   @IsNumber()
   @IsOptional()
-  @ApiProperty({ description: '최대 인원', required: false })
+  @ApiProperty({ description: '최대 인원', default: 4, required: false })
   max?: number;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({ description: '이미지 CND URL',required: false })
+  image: string[];
 }

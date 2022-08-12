@@ -1,30 +1,35 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcrypt';
-import { CreateUserDto } from 'src/user/dto/create-user.dto';
+import { JwtPayload } from './jwtPayload.type';
 
 @Injectable()
 export class AuthService {
   constructor(private readonly jwtService: JwtService) {}
 
-  async loginGetToken(payload: CreateUserDto) {
-    const accessToken = this.jwtService.sign(payload, {
+  async loginGetToken(id: string, email: string) {
+    const jwtPayload: JwtPayload = {
+      sub: id,
+      email,
+    };
+
+    const accessToken = this.jwtService.sign(jwtPayload, {
       issuer: 'moamoa.com',
-      expiresIn: 60 * 30, //30분
+      expiresIn: '1m',
       secret: process.env.JWT_SECRET,
     });
 
-    const refreshToken = this.jwtService.sign(payload, {
+    const refreshToken = this.jwtService.sign(jwtPayload, {
       issuer: 'moamoa.com',
-      expiresIn: 60 * 60 * 24 * 7, //7일
+      expiresIn: '7d',
       secret: process.env.JWT_SECRET,
     });
+
     return { accessToken, refreshToken };
   }
 
   async preHash(refreshToken: string) {
     return await bcrypt.hash(refreshToken, 5);
   }
-  logout() {}
   refreshToken() {}
 }

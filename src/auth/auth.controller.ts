@@ -25,7 +25,10 @@ export class AuthController {
   async googleCallback(@Req() req: Request, @Res() res: Response) {
     const googleData = req.user as CreateUserDto;
 
-    const tokens = await this.authService.loginGetToken(googleData);
+    const tokens = await this.authService.loginGetToken(
+      googleData.id,
+      googleData.email,
+    );
     const hashedRt = await this.authService.preHash(tokens.refreshToken);
 
     const userData: CreateUserDto = {
@@ -36,14 +39,17 @@ export class AuthController {
       hashedRt,
     };
 
-    await this.userService.findByProviderIdOrSave(userData);
+    await this.userService.findByIdOrSaveOrTokenUpdate(userData);
+
+    res.cookie('access-token', tokens.accessToken);
+    res.cookie('refresh-token', tokens.refreshToken);
 
     return res.status(200).json(tokens);
   }
-
-  @Post('/logout')
-  logout() {}
-
-  @Post('/refresh')
-  refreshToken() {}
+  @Get('/logout')
+  logout(@Req() req: Request) {
+    console.log('req', req);
+    const user = req.user;
+    return this.userService.logout(user['id']);
+  }
 }

@@ -16,7 +16,7 @@ export class UserService {
     return this.prisma.user.findUnique({ where: { id } });
   }
 
-  async findByProviderIdOrSave(data: CreateUserDto) {
+  async findByIdOrSaveOrTokenUpdate(data: CreateUserDto) {
     const user = await this.prisma.user.upsert({
       where: {
         id: data.id,
@@ -47,4 +47,20 @@ export class UserService {
   async deleteUser(id: string): Promise<User> {
     return await this.prisma.user.delete({ where: { id } });
   }
+
+  async logout(id: string) {
+    return await this.prisma.user.updateMany({
+      where: {
+        id,
+        hashedRt: {
+          not: null,
+        },
+      },
+      data: {
+        hashedRt: null,
+      },
+    });
+  }
+
+  a;
 }

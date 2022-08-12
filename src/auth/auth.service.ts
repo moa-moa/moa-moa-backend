@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -19,4 +20,10 @@ export class AuthService {
     });
     return { accessToken, refreshToken };
   }
+
+  async preHash(refreshToken: string) {
+    return await bcrypt.hash(refreshToken, 5);
+  }
+  logout() {}
+  refreshToken() {}
 }

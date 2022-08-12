@@ -27,6 +27,7 @@ export class UserService {
         provider: data.provider,
         email: data.email,
         name: data.name,
+        hashedRt: data.hashedRt,
       },
     });
 

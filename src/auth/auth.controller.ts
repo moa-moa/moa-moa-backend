@@ -1,4 +1,4 @@
-import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
 import passport from 'passport';
@@ -19,18 +19,31 @@ export class AuthController {
     passport.authenticate('google', { scope: ['profile', 'email'] });
   }
 
-  // get token (login)
+  // get token
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
   async googleCallback(@Req() req: Request, @Res() res: Response) {
-    const user = await this.userService.findByProviderIdOrSave(
-      req.user as CreateUserDto,
-    );
+    const googleData = req.user as CreateUserDto;
 
-    const payload = { id: user.id, name: user.name, email: user.email };
+    const tokens = await this.authService.loginGetToken(googleData);
+    const hashedRt = await this.authService.preHash(tokens.refreshToken);
 
-    const data = await this.authService.loginGetToken(payload);
+    const userData: CreateUserDto = {
+      id: googleData.id,
+      provider: googleData.provider,
+      email: googleData.email,
+      name: googleData.name,
+      hashedRt,
+    };
 
-    return res.status(200).json(data);
+    await this.userService.findByProviderIdOrSave(userData);
+
+    return res.status(200).json(tokens);
   }
+
+  @Post('/logout')
+  logout() {}
+
+  @Post('/refresh')
+  refreshToken() {}
 }

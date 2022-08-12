@@ -35,10 +35,6 @@ COPY --chown=node:node package*.json ./
 COPY --chown=node:node --from=development /usr/src/app/node_modules ./node_modules
 
 COPY --chown=node:node . .
-<<<<<<< HEAD
-
-=======
->>>>>>> 8deaa32127073aff9cfc01976aa57b84071d0c3e
 # Run the build command which creates the production bundle
 RUN npm run prisma:generate
 RUN npm run build

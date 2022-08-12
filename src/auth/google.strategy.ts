@@ -8,6 +8,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       clientID: process.env.OAUTH_GOOGLE_ID,
       clientSecret: process.env.OAUTH_GOOGLE_SECRET,
       callbackURL: process.env.OAUTH_GOOGLE_REDIRECT,
+      secret: process.env.OAUTH_GOOGLE_SECRET,
       scope: ['email', 'profile'],
     });
   }

@@ -21,7 +21,9 @@ export class UserService {
       where: {
         id: data.id,
       },
-      update: {},
+      update: {
+        hashedRt: data.hashedRt,
+      },
       create: {
         id: data.id,
         provider: data.provider,

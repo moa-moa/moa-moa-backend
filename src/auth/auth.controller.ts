@@ -5,6 +5,7 @@ import passport from 'passport';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UserService } from '../user/user.service';
 import { AuthService } from './auth.service';
+import { JwtPayload } from './jwtPayload.type';
 
 @Controller('auth')
 export class AuthController {
@@ -25,7 +26,7 @@ export class AuthController {
   async googleCallback(@Req() req: Request, @Res() res: Response) {
     const googleData = req.user as CreateUserDto;
 
-    const tokens = await this.authService.loginGetToken(
+    const tokens = await this.authService.getToken(
       googleData.id,
       googleData.email,
     );
@@ -52,4 +53,28 @@ export class AuthController {
     const user = req.user;
     return this.userService.logout(user['id']);
   }
+
+@Get('refresh')
+@UseGuards(AuthGuard('jwt-refresh'))
+async refreshToken(@Req() req: Request, @Res() res: Response) {
+  console.log("req",req)
+  const { refreshToken, sub, email } = req.user as JwtPayload & {
+    refreshToken: string;
+  };
+
+  const rt = await this.authService.preHash(refreshToken);
+  const user = await this.userService.findByIdAndCheckRT(sub, rt);
+
+  const tokens = await this.authService.getToken(sub, email);
+
+  res.cookie('access-token', tokens.accessToken);
+  res.cookie('refresh-token', tokens.refreshToken);
+
+  return await this.userService.updateHashedRefreshToken(user.id, refreshToken);
+
+ 
+}
+
+
+
 }

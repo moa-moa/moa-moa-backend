@@ -35,6 +35,18 @@ export class UserService {
 
     return user;
   }
+  async updateHashedRefreshToken(id: string, rt: string) {
+    const user = await this.prisma.user.update({
+      where: {
+        id,
+      },
+      data: {
+        hashedRt: rt,
+      },
+    });
+
+    return user;
+  }
 
   async createUser(createDto: CreateUserDto): Promise<User> {
     return await this.prisma.user.create({ data: createDto });
@@ -46,6 +58,10 @@ export class UserService {
 
   async deleteUser(id: string): Promise<User> {
     return await this.prisma.user.delete({ where: { id } });
+  }
+
+  async findByIdAndCheckRT(id: string, rt: string) {
+    return await this.prisma.user.findFirstOrThrow({ where: { id, hashedRt: rt }});
   }
 
   async logout(id: string) {

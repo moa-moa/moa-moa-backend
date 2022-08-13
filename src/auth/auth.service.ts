@@ -7,21 +7,21 @@ import { JwtPayload } from './jwtPayload.type';
 export class AuthService {
   constructor(private readonly jwtService: JwtService) {}
 
-  async loginGetToken(id: string, email: string) {
+  async getToken(id: string, email: string) {
     const jwtPayload: JwtPayload = {
       sub: id,
       email,
     };
 
-    const accessToken = this.jwtService.sign(jwtPayload, {
+    const accessToken = await this.jwtService.signAsync(jwtPayload, {
       issuer: 'moamoa.com',
       expiresIn: '1m',
       secret: process.env.JWT_SECRET,
     });
 
-    const refreshToken = this.jwtService.sign(jwtPayload, {
+    const refreshToken = await this.jwtService.signAsync(jwtPayload, {
       issuer: 'moamoa.com',
-      expiresIn: '7d',
+      expiresIn: '2m',
       secret: process.env.JWT_SECRET,
     });
 

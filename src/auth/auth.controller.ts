@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
 import passport from 'passport';
@@ -42,7 +42,7 @@ export class AuthController {
 
     await this.userService.findByIdOrSaveOrTokenUpdate(userData);
 
-    res.cookie('access-token', tokens.accessToken);
+    res.setHeader('Authorization', tokens.accessToken);
     res.cookie('refresh-token', tokens.refreshToken);
 
     return res.status(200).json(tokens);
@@ -54,27 +54,22 @@ export class AuthController {
     return this.userService.logout(user['id']);
   }
 
-@Get('refresh')
-@UseGuards(AuthGuard('jwt-refresh'))
-async refreshToken(@Req() req: Request, @Res() res: Response) {
-  console.log("req",req)
-  const { refreshToken, sub, email } = req.user as JwtPayload & {
-    refreshToken: string;
-  };
+  @Get('refresh')
+  @UseGuards(AuthGuard('jwt-refresh'))
+  async refreshToken(@Req() req: Request, @Res() res: Response) {
+    const { refreshToken, sub, email } = req.user as JwtPayload & {
+      refreshToken: string;
+    };
+    const checkUser = await this.userService.findByIdAndCheckRT(
+      sub,
+      refreshToken,
+    );
 
-  const rt = await this.authService.preHash(refreshToken);
-  const user = await this.userService.findByIdAndCheckRT(sub, rt);
+    const tokens = await this.authService.getToken(sub, email);
 
-  const tokens = await this.authService.getToken(sub, email);
+    const hashtedRt = await this.authService.preHash(tokens.refreshToken);
+    await this.userService.updateHashedRefreshToken(checkUser.id, hashtedRt);
 
-  res.cookie('access-token', tokens.accessToken);
-  res.cookie('refresh-token', tokens.refreshToken);
-
-  return await this.userService.updateHashedRefreshToken(user.id, refreshToken);
-
- 
-}
-
-
-
+    res.status(200).json(tokens);
+  }
 }

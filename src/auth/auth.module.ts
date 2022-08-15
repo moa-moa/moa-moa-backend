@@ -9,6 +9,6 @@ import { RtStrategy } from './rt.strategy';
 @Module({
   imports: [JwtModule.register({}), UserModule],
   controllers: [AuthController],
-  providers: [GoogleStrategy, AuthService,RtStrategy],
+  providers: [GoogleStrategy, AuthService, RtStrategy],
 })
 export class AuthModule {}

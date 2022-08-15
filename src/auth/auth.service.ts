@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import bcrypt from 'bcrypt';
+import * as argon from 'argon2';
 import { JwtPayload } from './jwtPayload.type';
 
 @Injectable()
@@ -21,7 +21,7 @@ export class AuthService {
 
     const refreshToken = await this.jwtService.signAsync(jwtPayload, {
       issuer: 'moamoa.com',
-      expiresIn: '2m',
+      expiresIn: '10m',
       secret: process.env.JWT_SECRET,
     });
 
@@ -29,7 +29,6 @@ export class AuthService {
   }
 
   async preHash(refreshToken: string) {
-    return await bcrypt.hash(refreshToken, 5);
+    return await argon.hash(refreshToken);
   }
-  refreshToken() {}
 }

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { User } from '@prisma/client';
+import * as argon from 'argon2';
 import { PrismaService } from '../common/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -61,7 +62,10 @@ export class UserService {
   }
 
   async findByIdAndCheckRT(id: string, rt: string) {
-    return await this.prisma.user.findFirstOrThrow({ where: { id, hashedRt: rt }});
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    const match = await argon.verify(user.hashedRt, rt);
+    if (match) return user;
+    else throw new Error('Refresh Tokens do not match.');
   }
 
   async logout(id: string) {

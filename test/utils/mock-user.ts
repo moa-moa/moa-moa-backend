@@ -24,5 +24,5 @@ export const invalidMockUser = (
 });
 
 export const validMockUpdateUser = (): UpdateUserDto => ({
-  name: 'test update name',
+  avatar: 'test update imageURL',
 });

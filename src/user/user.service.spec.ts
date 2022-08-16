@@ -1,7 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
 import { PrismaModule } from '../common/prisma.module';
-import { PrismaClient, User } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
+import { User } from './model/user.model';
 import { validMockUpdateUser, validMockUser } from '../../test/utils/mock-user';
 
 describe('UserService', () => {
@@ -38,11 +39,13 @@ describe('UserService', () => {
     });
   });
   describe('updateUser', () => {
-    it('should be update a user with valid data', async () => {
-      const mockUpdateData = validMockUpdateUser();
-      testUser = await service.updateUser(testUser.id, mockUpdateData);
+    it('should be update a user with imageURL', async () => {
+      const mockImageUrl = validMockUpdateUser();
+      testUser = await service.updateUser(testUser.id, mockImageUrl);
 
-      expect(testUser.name).toEqual(mockUpdateData.name);
+      expect(testUser.Avatar.userId).toEqual(testUser.id);
+      expect(testUser.Avatar.imageUrl).toEqual(mockImageUrl.avatar);
+      expect(testUser.Avatar.type).toEqual('USER');
     });
   });
 

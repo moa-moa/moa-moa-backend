@@ -3,7 +3,7 @@ import { Image } from '@prisma/client';
 
 export class User {
   @ApiProperty({ description: 'id' })
-  readonly id: number;
+  readonly id: string;
   @ApiProperty({ description: '제공자' })
   provider: string;
   @ApiProperty({ description: '이메일' })
@@ -11,12 +11,12 @@ export class User {
   @ApiProperty({ description: '이름' })
   name: string;
   @ApiProperty({ description: '프로필 사진' })
-  Avatar: Image;
+  Avatar?: Image;
   @ApiProperty({ description: '해싱된 refresh token' })
   hashedRt?: string;
 
   @ApiProperty({ description: '생성일' })
-  createdAt?: string;
+  createdAt?: Date;
   @ApiProperty({ description: '수정일' })
-  updatedAt?: string;
+  updatedAt?: Date;
 }

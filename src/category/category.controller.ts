@@ -7,7 +7,9 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import {
   ApiOkResponse,
   ApiOperation,
@@ -37,6 +39,7 @@ export class CategoryController {
   })
   @ApiOkResponse({ type: [Category] })
   @Get()
+  @UseGuards(AuthGuard('jwt'))
   findCategories(@Query('club') club?: boolean) {
     return this.categoryService.findCategories({
       include: buildQuery({ club }).include,
@@ -66,6 +69,7 @@ export class CategoryController {
   })
   @ApiOkResponse({ type: Category })
   @Post()
+  @UseGuards(AuthGuard('jwt'))
   createCategory(@Body() createCategoryDto: CreateCategoryDto) {
     return this.categoryService.createCategory(createCategoryDto);
   }

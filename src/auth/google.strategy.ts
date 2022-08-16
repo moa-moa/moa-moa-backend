@@ -8,6 +8,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       clientID: process.env.OAUTH_GOOGLE_ID,
       clientSecret: process.env.OAUTH_GOOGLE_SECRET,
       callbackURL: process.env.OAUTH_GOOGLE_REDIRECT,
+      parseErrorResponse: true,
       scope: ['email', 'profile'],
     });
   }
@@ -26,7 +27,6 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       name: displayName || name.familyName + name.givenName,
       email: emails[0].value,
       accessToken,
-      refreshToken,
     };
 
     done(null, user);

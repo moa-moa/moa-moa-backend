@@ -12,4 +12,8 @@ export class CreateUserDto {
   @IsString()
   @ApiProperty({ description: '이름' })
   name: string;
+
+  @IsString()
+  @ApiProperty({ description: '해시된 refresh token' })
+  hashedRt: string;
 }

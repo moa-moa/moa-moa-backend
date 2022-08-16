@@ -9,6 +9,7 @@ export const validMockUser = (
   provider: 'google',
   name: 'test1name',
   ...fields,
+  hashedRt: '123',
 });
 
 export const invalidMockUser = (
@@ -19,6 +20,7 @@ export const invalidMockUser = (
   name: '',
   provider: '',
   ...fields,
+  hashedRt: '',
 });
 
 export const validMockUpdateUser = (): UpdateUserDto => ({

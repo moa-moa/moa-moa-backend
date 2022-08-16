@@ -5,6 +5,7 @@ import passport from 'passport';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UserService } from '../user/user.service';
 import { AuthService } from './auth.service';
+import { JwtPayload } from './jwtPayload.type';
 
 @Controller('auth')
 export class AuthController {
@@ -19,18 +20,56 @@ export class AuthController {
     passport.authenticate('google', { scope: ['profile', 'email'] });
   }
 
-  // get token (login)
+  // get token
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
   async googleCallback(@Req() req: Request, @Res() res: Response) {
-    const user = await this.userService.findByProviderIdOrSave(
-      req.user as CreateUserDto,
+    const googleData = req.user as CreateUserDto;
+
+    const tokens = await this.authService.getToken(
+      googleData.id,
+      googleData.email,
+    );
+    const hashedRt = await this.authService.preHash(tokens.refreshToken);
+
+    const userData: CreateUserDto = {
+      id: googleData.id,
+      provider: googleData.provider,
+      email: googleData.email,
+      name: googleData.name,
+      hashedRt,
+    };
+
+    await this.userService.findByIdOrSaveOrTokenUpdate(userData);
+
+    res.setHeader('Authorization', tokens.accessToken);
+    res.cookie('refresh-token', tokens.refreshToken);
+
+    return res.status(200).json(tokens);
+  }
+  @Get('/logout')
+  logout(@Req() req: Request) {
+    console.log('req', req);
+    const user = req.user;
+    return this.userService.logout(user['id']);
+  }
+
+  @Get('refresh')
+  @UseGuards(AuthGuard('jwt-refresh'))
+  async refreshToken(@Req() req: Request, @Res() res: Response) {
+    const { refreshToken, sub, email } = req.user as JwtPayload & {
+      refreshToken: string;
+    };
+    const checkUser = await this.userService.findByIdAndCheckRT(
+      sub,
+      refreshToken,
     );
 
-    const payload = { id: user.id, name: user.name, email: user.email };
+    const tokens = await this.authService.getToken(sub, email);
 
-    const data = await this.authService.loginGetToken(payload);
+    const hashtedRt = await this.authService.preHash(tokens.refreshToken);
+    await this.userService.updateHashedRefreshToken(checkUser.id, hashtedRt);
 
-    return res.status(200).json(data);
+    res.status(200).json(tokens);
   }
 }

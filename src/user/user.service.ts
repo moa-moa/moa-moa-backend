@@ -54,7 +54,24 @@ export class UserService {
   }
 
   async updateUser(id: string, updateDto: UpdateUserDto): Promise<User> {
-    return await this.prisma.user.update({ where: { id }, data: updateDto });
+    return await this.prisma.user.update({
+      where: { id },
+      data: {
+        Avatar: {
+          upsert: {
+            update: {
+              imageUrl: updateDto.avatar,
+              type: 'USER',
+            },
+            create: {
+              imageUrl: updateDto.avatar,
+              type: 'USER',
+            },
+          },
+        },
+      },
+      include: { Avatar: true },
+    });
   }
 
   async deleteUser(id: string): Promise<User> {

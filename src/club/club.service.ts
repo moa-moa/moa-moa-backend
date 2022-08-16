@@ -1,12 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Club } from '@prisma/client';
+import { CategoryService } from '../category/category.service';
 import { PrismaService } from '../common/prisma.service';
 import { CreateClubDto } from './dto/create-club.dto';
 import { UpdateClubDto } from './dto/update-club.dto';
 
 @Injectable()
 export class ClubService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly categoryService: CategoryService,
+  ) {}
 
   findClubs() {
     return this.prisma.club.findMany();
@@ -15,6 +19,12 @@ export class ClubService {
     return this.prisma.club.findUnique({ where: { id } });
   }
   async createClub(createClubDto: CreateClubDto): Promise<Club> {
+    if (createClubDto.title.length === 0) {
+      throw new BadRequestException('invalid club title');
+    }
+
+    //존재하는 categoryId인지 확인
+    await this.categoryService.findCategoryById(createClubDto.categoryId);
     return await this.prisma.club.create({ data: createClubDto });
   }
   async updateClub(id: number, updateClubDto: UpdateClubDto) {

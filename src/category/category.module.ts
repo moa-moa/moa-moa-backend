@@ -8,5 +8,6 @@ import { AtStrategy } from '../auth/at.strategy';
   imports: [PrismaModule],
   controllers: [CategoryController],
   providers: [CategoryService, AtStrategy],
+  exports: [CategoryService],
 })
 export class CategoryModule {}

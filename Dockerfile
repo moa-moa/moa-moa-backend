@@ -64,8 +64,6 @@ COPY --chown=node:node --from=build /usr/src/app/docker-bootstrap-app.sh ./docke
 
 RUN chmod +x ./docker-bootstrap-app.sh
 
-ENV DATABASE_URL "mysql://root:moamoa801@34.64.230.89:3306/test"
-
 # Start the server using the production build
 
 ENTRYPOINT ["./docker-bootstrap-app.sh"]

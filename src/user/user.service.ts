@@ -3,7 +3,6 @@ import { User } from '@prisma/client';
 import * as argon from 'argon2';
 import { PrismaService } from '../common/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
@@ -51,27 +50,6 @@ export class UserService {
 
   async createUser(createDto: CreateUserDto): Promise<User> {
     return await this.prisma.user.create({ data: createDto });
-  }
-
-  async updateUser(id: string, updateDto: UpdateUserDto): Promise<User> {
-    return await this.prisma.user.update({
-      where: { id },
-      data: {
-        Avatar: {
-          upsert: {
-            update: {
-              imageUrl: updateDto.avatar,
-              type: 'USER',
-            },
-            create: {
-              imageUrl: updateDto.avatar,
-              type: 'USER',
-            },
-          },
-        },
-      },
-      include: { Avatar: true },
-    });
   }
 
   async deleteUser(id: string): Promise<User> {

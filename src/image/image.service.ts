@@ -11,6 +11,11 @@ export class ImageService {
 
   async uploadAvatarByUserId(userId: string, avatar: Express.Multer.File) {
     if (avatar) {
+      //이전 이미지 삭제
+      const userAvatar = await this.findAvatarByUserId(userId);
+      await this.cloudStorageService.removeFile(userAvatar.imageName);
+
+      //현 이미지 업로드
       const file = await this.cloudStorageService.uploadFile(avatar, '');
 
       return this.prisma.image.upsert({

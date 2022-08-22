@@ -53,7 +53,6 @@ export class UserController {
   @ApiConsumes('multipart/form-data')
   @Post('avatar/upload/:id')
   @UseInterceptors(FileInterceptor('file'))
-  @Bind(UploadedFile())
   async upload(
     @UploadedFile() file: Express.Multer.File,
     @Param('id') id: string,

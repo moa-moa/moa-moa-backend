@@ -6,13 +6,19 @@ import {
   Param,
   Patch,
   Post,
+  UploadedFiles,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import {
+  ApiBody,
+  ApiConsumes,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+import { File } from '../common/file.interface';
 import { ClubService } from './club.service';
 import { CreateClubDto } from './dto/create-club.dto';
 import { UpdateClubDto } from './dto/update-club.dto';
@@ -50,6 +56,9 @@ export class ClubController {
     return this.clubService.findClubById(id);
   }
 
+  
+  // @ApiConsumes('multipart/form-data')
+  // @UseInterceptors(FilesInterceptor('files', 10)) //업로드파일을 10개로 제한
   @ApiOperation({
     summary: '클럽 1개 생성',
     description: 'Club 모델 하나를 생성합니다.',
@@ -57,7 +66,9 @@ export class ClubController {
   @ApiOkResponse({ type: Club })
   @Post()
   createClub(@Body() createClubDto: CreateClubDto) {
-    createClubDto.owner = '로그인userid';
+   createClubDto.owner = '로그인userid';
+   console.log("createClubDto",createClubDto);
+   // console.log("files",files);
     return this.clubService.createClub(createClubDto);
   }
 

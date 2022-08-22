@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import {  IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
+import { File } from 'src/common/file.interface';
 
 export class CreateClubDto {
   @IsNumber()
@@ -20,6 +21,11 @@ export class CreateClubDto {
 
   @IsNumber()
   @IsOptional()
-  @ApiProperty({ description: '최대 인원', required: false })
+  @ApiProperty({ description: '최대 인원', required: false, default: 4 })
   max?: number;
+
+  @IsArray()  
+  @IsOptional()
+  @ApiProperty({ type: 'string', format: 'binary', description: '이미지', required: false })
+  files?: File[]
 }

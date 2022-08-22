@@ -69,7 +69,6 @@ export class CategoryController {
   })
   @ApiOkResponse({ type: Category })
   @Post()
-  @UseGuards(AuthGuard('jwt'))
   createCategory(@Body() createCategoryDto: CreateCategoryDto) {
     return this.categoryService.createCategory(createCategoryDto);
   }

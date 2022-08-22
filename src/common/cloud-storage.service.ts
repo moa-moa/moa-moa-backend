@@ -30,8 +30,7 @@ export class CloudStorageService {
   }
 
   private setFilename(uploadedFile: File): string {
-    console.log('upload', uploadedFile);
-    const fileName = parse(uploadedFile.originalname);
+   const fileName = parse(uploadedFile.originalname);
     return `${fileName.name}-${Date.now()}${fileName.ext}`
       .replace(/^\.+/g, '')
       .replace(/^\/+/g, '')

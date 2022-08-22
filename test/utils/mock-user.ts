@@ -1,5 +1,4 @@
 import { Prisma } from '@prisma/client';
-import { UpdateAvatarDto } from 'src/image/dto/update-avatar.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 export const validMockUser = (
   fields?: Partial<Prisma.UserCreateInput>,
@@ -21,8 +20,4 @@ export const invalidMockUser = (
   provider: '',
   ...fields,
   hashedRt: '',
-});
-
-export const validMockUpdateAvatar = (): UpdateAvatarDto => ({
-  avatar: 'test update imageURL',
 });

@@ -1,22 +1,12 @@
+import { Body, Controller, Delete, Param, Patch } from '@nestjs/common';
 import {
-  Bind,
-  Controller,
-  Delete,
-  Param,
-  Post,
-  UploadedFile,
-  UseInterceptors,
-} from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import {
-  ApiBody,
-  ApiConsumes,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
-import { ImageService } from '../image/image.service';
+import { UpdateAvatarDto } from 'src/image/dto/update-avatar.dto';
+import { ImageService } from 'src/image/image.service';
 import { User } from './model/user.model';
 import { UserService } from './user.service';
 
@@ -29,36 +19,23 @@ export class UserController {
   ) {}
 
   @ApiOperation({
-    summary: '프로필사진 업로드',
-    description: 'User의 프로필 사진을 업로드합니다.',
+    summary: '프로필사진 변경',
+    description: 'User의 프로필 사진을 수정합니다.',
   })
   @ApiParam({
     name: 'id',
     type: String,
     required: true,
     description: 'User 모델의 Id값입니다.',
-    example: '100306381267430826077',
+    example: '106746348034965777278',
   })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        file: {
-          type: 'string',
-          format: 'binary',
-        },
-      },
-    },
-  })
-  @ApiConsumes('multipart/form-data')
-  @Post('avatar/upload/:id')
-  @UseInterceptors(FileInterceptor('file'))
-  @Bind(UploadedFile())
-  async upload(
-    @UploadedFile() file: Express.Multer.File,
+  @ApiOkResponse({ type: User })
+  @Patch('avatar/:id')
+  async updateUser(
     @Param('id') id: string,
+    @Body() updateAvatarDto: UpdateAvatarDto,
   ) {
-    await this.imageService.uploadAvatarByUserId(id, file);
+    await this.imageService.updateAvatarByUserId(id, updateAvatarDto);
     return await this.userService.findUserById(id);
   }
 

@@ -1,11 +1,12 @@
-import { ApiProperty } from '@nestjs/swagger';
-import {  IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
 import { File } from 'src/common/file.interface';
 
 export class CreateClubDto {
-  @IsNumber()
+  //@IsNumber()
+  @IsString()
   @ApiProperty({ description: '카테고리 id' })
-  categoryId: number;
+  categoryId: string;
 
   @IsString()
   @ApiProperty({ description: '클럽 제목' })
@@ -19,13 +20,12 @@ export class CreateClubDto {
   @ApiProperty({ description: 'user id' })
   owner: string;
 
-  @IsNumber()
+  //  @IsNumber()
   @IsOptional()
   @ApiProperty({ description: '최대 인원', required: false, default: 4 })
-  max?: number;
+  max?: string;
 
-  @IsArray()  
   @IsOptional()
-  @ApiProperty({ type: 'string', format: 'binary', description: '이미지', required: false })
-  files?: File[]
+  @ApiPropertyOptional({ type: [String], format: 'binary' })
+  images?: any[];
 }

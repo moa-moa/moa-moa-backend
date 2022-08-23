@@ -16,6 +16,7 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+import { File } from '../common/file.interface';
 import { ImageService } from '../image/image.service';
 import { User } from './model/user.model';
 import { UserService } from './user.service';
@@ -53,10 +54,7 @@ export class UserController {
   @ApiConsumes('multipart/form-data')
   @Post('avatar/upload/:id')
   @UseInterceptors(FileInterceptor('file'))
-  async upload(
-    @UploadedFile() file: Express.Multer.File,
-    @Param('id') id: string,
-  ) {
+  async upload(@UploadedFile() file: File, @Param('id') id: string) {
     await this.imageService.uploadAvatarByUserId(id, file);
     return await this.userService.findUserById(id);
   }

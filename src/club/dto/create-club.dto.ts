@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 import { File } from 'src/common/file.interface';
 
 export class CreateClubDto {
@@ -27,5 +27,5 @@ export class CreateClubDto {
 
   @IsOptional()
   @ApiPropertyOptional({ type: [String], format: 'binary' })
-  images?: File[];
+  files?: File[];
 }

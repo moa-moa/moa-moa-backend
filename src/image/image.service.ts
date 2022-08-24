@@ -55,26 +55,45 @@ export class ImageService {
     return this.prisma.image.delete({ where: { userId } });
   }
 
-  async uploadImageOnClub(images: File[]) : Promise<number[]> {
-    let imageIds =[];
+  async findImageByClubId(clubId: number) {
+    const image = await this.prisma.image.findMany({ where: { ClubImage: {some: {clubId}} } });
+    if (!image) {
+      throw new BadRequestException(
+        `Could not find image with userId ${clubId}`,
+      );
+    }
+    return image;
+  }
+
+  async uploadImageOnClub(clubId: number , images: File[]): Promise<void>{
     if (images.length !== 0) {
+      //이전 이미지 삭제
+      const clubImages = await this.findImageByClubId(clubId);
+      clubImages.map(async (image) => {
+        await this.cloudStorageService.removeFile(image.imageName);
+      })
+      await this.prisma.image.deleteMany({where: {ClubImage: {some: {clubId},}}})
+      
       //현 이미지 업로드
       images.map(async (image) => {
         const file = await this.cloudStorageService.uploadFile(image, '');
 
-        const createdImage = await this.prisma.image.create({
+        await this.prisma.image.create({
           data: {
             imageUrl: file.publicUrl,
             imageName: file.name,
             type: 'CLUB',
+            ClubImage: {
+              create: {
+                clubId
+              }
+            }
           },
         });
-         imageIds.push(createdImage.id);
       });
     } else {
       throw new BadRequestException(`Image did not transferred`);
     }
-    return imageIds;
   }
 
   

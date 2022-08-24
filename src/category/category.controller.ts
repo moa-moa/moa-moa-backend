@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
+  ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
@@ -67,7 +68,7 @@ export class CategoryController {
     summary: '카테고리 1개 생성',
     description: 'Cateogry 모델 하나를 생성합니다.',
   })
-  @ApiOkResponse({ type: Category })
+  @ApiCreatedResponse({ type: Category })
   @Post()
   createCategory(@Body() createCategoryDto: CreateCategoryDto) {
     return this.categoryService.createCategory(createCategoryDto);

@@ -13,6 +13,7 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import {
   ApiBody,
   ApiConsumes,
+  ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
@@ -95,18 +96,18 @@ export class ClubController {
   })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FilesInterceptor('files', 10)) //업로드파일을 10개로 제한
-  @ApiOkResponse({ type: Club })
+  @ApiCreatedResponse({ type: Club })
   @Post()
   async createClub(
     @UploadedFiles() files: File[],
     @Body() createClubDto: CreateClubDto,
   ) {
     createClubDto.owner = '로그인userid';
-    let imageIds = [];
+    const createdClub = await this.clubService.createClub(createClubDto);
     if (files.length > 0) {
-     imageIds= await this.imageService.uploadImageOnClub(files);
+     await this.imageService.uploadImageOnClub(createdClub.id,files);
     }
-    return await this.clubService.createClub(createClubDto, imageIds);
+    return await this.findClubById(createdClub.id);
    
   }
 
@@ -121,9 +122,18 @@ export class ClubController {
     description: 'Club 모델의 Id값입니다.',
     example: 1,
   })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FilesInterceptor('files', 10)) //업로드파일을 10개로 제한
   @ApiOkResponse({ type: Club })
   @Patch(':id')
-  updateClub(@Param('id') id: number, @Body() updateClubDto: UpdateClubDto) {
+  async updateClub(
+    @Param('id') id: number,
+    @UploadedFiles() files: File[],
+    @Body() updateClubDto: UpdateClubDto) {
+    
+    if (files.length > 0) {
+      await this.imageService.uploadImageOnClub(id,files);
+     }
     return this.clubService.updateClub(id, updateClubDto);
   }
 

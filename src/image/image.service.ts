@@ -10,7 +10,7 @@ export class ImageService {
     private cloudStorageService: CloudStorageService,
   ) {}
 
-  async uploadAvatarByUserId(userId: string, avatar: File) {
+  async uploadAvatarByUserId(userId: string, avatar: File) :Promise<any>{
     if (avatar) {
       //이전 이미지 삭제
       const userAvatar = await this.findAvatarByUserId(userId);
@@ -55,27 +55,37 @@ export class ImageService {
     return this.prisma.image.delete({ where: { userId } });
   }
 
-  async uploadImageOnClub(clubId: number, images: File[]) {
+  async uploadImageOnClub(images: File[]) : Promise<number[]> {
+    let imageIds =[];
     if (images.length !== 0) {
       //현 이미지 업로드
       images.map(async (image) => {
         const file = await this.cloudStorageService.uploadFile(image, '');
 
-        return this.prisma.image.create({
+        const createdImage = await this.prisma.image.create({
           data: {
             imageUrl: file.publicUrl,
             imageName: file.name,
             type: 'CLUB',
-            ClubImage: {
-              create: {
-                clubId,
-              },
-            },
           },
         });
+         imageIds.push(createdImage.id);
       });
     } else {
       throw new BadRequestException(`Image did not transferred`);
     }
+    return imageIds;
+  }
+
+  
+
+  async findImageByIds(ids: number[]) {
+    const image =  await this.prisma.image.findMany({
+      where: { id: { in: ids } },
+    });
+    if(!image || image.length !== ids.length){
+      throw new BadRequestException('invalid image ids');
+    }
+    return image;
   }
 }

@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Club } from '@prisma/client';
-import { query } from 'express';
+import { ImageService } from '../image/image.service';
 import { CategoryService } from '../category/category.service';
 import { PrismaService } from '../common/prisma.service';
 import { CreateClubDto } from './dto/create-club.dto';
@@ -11,13 +11,14 @@ export class ClubService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly categoryService: CategoryService,
+    private readonly imageService: ImageService,
   ) {}
 
   findClubs() {
     return this.prisma.club.findMany();
   }
-  findClubById(id: number) {
-    return this.prisma.club.findUnique({
+  async findClubById(id: number) {
+    return await this.prisma.club.findUnique({
       where: { id },
       include: {
         ClubImage: {
@@ -28,13 +29,19 @@ export class ClubService {
       },
     });
   }
-  async createClub(createClubDto: CreateClubDto): Promise<Club> {
+
+  async createClub(createClubDto: CreateClubDto, imageIds :number[]): Promise<Club> {
     if (createClubDto.title.length === 0) {
       throw new BadRequestException('invalid club title');
     }
 
     //존재하는 categoryId인지 확인
     await this.categoryService.findCategoryById(+createClubDto.categoryId);
+    //image 생성되었는지 확인
+    await this.imageService.findImageByIds(imageIds);
+
+    const data = imageIds.map((imageId) => ({ imageId }));
+
     return await this.prisma.club.create({
       data: {
         categoryId: +createClubDto.categoryId,
@@ -42,6 +49,12 @@ export class ClubService {
         description: createClubDto.description,
         owner: createClubDto.owner,
         max: +createClubDto.max,
+        ClubImage: {
+          createMany: {
+            data,
+            skipDuplicates: true,
+          },
+        }
       },
       include: {
         ClubImage: {

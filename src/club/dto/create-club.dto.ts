@@ -27,5 +27,5 @@ export class CreateClubDto {
 
   @IsOptional()
   @ApiPropertyOptional({ type: [String], format: 'binary' })
-  images?: any[];
+  images?: File[];
 }

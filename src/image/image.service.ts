@@ -81,7 +81,7 @@ export class ImageService {
     const promise: number[] = await this.saveClubImage(clubId, images);
     const result = await Promise.allSettled(promise);
     const imageIds = result.filter((f) => f.status === 'fulfilled');
-   
+
     return imageIds;
   }
 

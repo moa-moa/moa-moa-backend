@@ -68,7 +68,6 @@ export class ImageService {
   }
 
   async uploadImageOnClub(clubId: number, images: File[]) {
-    const imageIds: number[] = [];
     //이전 이미지 삭제
     const clubImages = await this.findImageByClubId(clubId);
     clubImages.map(async (image) => {
@@ -79,6 +78,15 @@ export class ImageService {
     });
 
     //현 이미지 업로드
+    const promise: number[] = await this.saveClubImage(clubId, images);
+    const result = await Promise.allSettled(promise);
+    const imageIds = result.filter((f) => f.status === 'fulfilled');
+   
+    return imageIds;
+  }
+
+  async saveClubImage(clubId: number, images: File[]) {
+    const imageIds: number[] = [];
     for (const image of images) {
       const file = await this.cloudStorageService.uploadFile(image, '');
 
@@ -95,8 +103,8 @@ export class ImageService {
         },
       });
       imageIds.push(data.id);
+      return imageIds;
     }
-    return imageIds;
   }
 
   async findImageByIds(ids: number[]) {

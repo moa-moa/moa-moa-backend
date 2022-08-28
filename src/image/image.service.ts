@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { File } from '../common/file.interface';
 import { CloudStorageService } from '../common/cloud-storage.service';
 import { PrismaService } from '../common/prisma.service';
+import { Image } from '@prisma/client';
 
 @Injectable()
 export class ImageService {
@@ -65,8 +66,8 @@ export class ImageService {
     return image;
   }
 
-  async uploadImageOnClub(clubId: number , images: File[]): Promise<void>{
-    if (images.length !== 0) {
+  async uploadImageOnClub(clubId: number , images: File[]){
+    const imageIds: number[] = [];
       //이전 이미지 삭제
       const clubImages = await this.findImageByClubId(clubId);
       clubImages.map(async (image) => {
@@ -75,10 +76,10 @@ export class ImageService {
       await this.prisma.image.deleteMany({where: {ClubImage: {some: {clubId},}}})
       
       //현 이미지 업로드
-      images.map(async (image) => {
+      for(let image of images){
         const file = await this.cloudStorageService.uploadFile(image, '');
 
-        await this.prisma.image.create({
+        const data = await this.prisma.image.create({
           data: {
             imageUrl: file.publicUrl,
             imageName: file.name,
@@ -90,10 +91,10 @@ export class ImageService {
             }
           },
         });
-      });
-    } else {
-      throw new BadRequestException(`Image did not transferred`);
-    }
+        imageIds.push(data.id);
+      }
+      return imageIds;
+
   }
 
   

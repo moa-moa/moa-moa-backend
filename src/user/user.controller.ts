@@ -1,5 +1,4 @@
 import {
-  Bind,
   Controller,
   Delete,
   Param,

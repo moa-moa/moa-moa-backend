@@ -2,7 +2,6 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { File } from '../common/file.interface';
 import { CloudStorageService } from '../common/cloud-storage.service';
 import { PrismaService } from '../common/prisma.service';
-import { Image } from '@prisma/client';
 
 @Injectable()
 export class ImageService {
@@ -11,7 +10,7 @@ export class ImageService {
     private cloudStorageService: CloudStorageService,
   ) {}
 
-  async uploadAvatarByUserId(userId: string, avatar: File) :Promise<any>{
+  async uploadAvatarByUserId(userId: string, avatar: File): Promise<any> {
     if (avatar) {
       //이전 이미지 삭제
       const userAvatar = await this.findAvatarByUserId(userId);
@@ -57,7 +56,9 @@ export class ImageService {
   }
 
   async findImageByClubId(clubId: number) {
-    const image = await this.prisma.image.findMany({ where: { ClubImage: {some: {clubId}} } });
+    const image = await this.prisma.image.findMany({
+      where: { ClubImage: { some: { clubId } } },
+    });
     if (!image) {
       throw new BadRequestException(
         `Could not find image with userId ${clubId}`,
@@ -66,44 +67,43 @@ export class ImageService {
     return image;
   }
 
-  async uploadImageOnClub(clubId: number , images: File[]){
+  async uploadImageOnClub(clubId: number, images: File[]) {
     const imageIds: number[] = [];
-      //이전 이미지 삭제
-      const clubImages = await this.findImageByClubId(clubId);
-      clubImages.map(async (image) => {
-        await this.cloudStorageService.removeFile(image.imageName);
-      })
-      await this.prisma.image.deleteMany({where: {ClubImage: {some: {clubId},}}})
-      
-      //현 이미지 업로드
-      for(let image of images){
-        const file = await this.cloudStorageService.uploadFile(image, '');
+    //이전 이미지 삭제
+    const clubImages = await this.findImageByClubId(clubId);
+    clubImages.map(async (image) => {
+      await this.cloudStorageService.removeFile(image.imageName);
+    });
+    await this.prisma.image.deleteMany({
+      where: { ClubImage: { some: { clubId } } },
+    });
 
-        const data = await this.prisma.image.create({
-          data: {
-            imageUrl: file.publicUrl,
-            imageName: file.name,
-            type: 'CLUB',
-            ClubImage: {
-              create: {
-                clubId
-              }
-            }
+    //현 이미지 업로드
+    for (const image of images) {
+      const file = await this.cloudStorageService.uploadFile(image, '');
+
+      const data = await this.prisma.image.create({
+        data: {
+          imageUrl: file.publicUrl,
+          imageName: file.name,
+          type: 'CLUB',
+          ClubImage: {
+            create: {
+              clubId,
+            },
           },
-        });
-        imageIds.push(data.id);
-      }
-      return imageIds;
-
+        },
+      });
+      imageIds.push(data.id);
+    }
+    return imageIds;
   }
 
-  
-
   async findImageByIds(ids: number[]) {
-    const image =  await this.prisma.image.findMany({
+    const image = await this.prisma.image.findMany({
       where: { id: { in: ids } },
     });
-    if(!image || image.length !== ids.length){
+    if (!image || image.length !== ids.length) {
       throw new BadRequestException('invalid image ids');
     }
     return image;

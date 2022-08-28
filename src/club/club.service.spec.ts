@@ -11,7 +11,11 @@ describe('ClubService', () => {
   const prismaClient = new PrismaClient();
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [PrismaModule.forTest(prismaClient), CategoryModule, ImageModule],
+      imports: [
+        PrismaModule.forTest(prismaClient),
+        CategoryModule,
+        ImageModule,
+      ],
       providers: [ClubService],
     }).compile();
 

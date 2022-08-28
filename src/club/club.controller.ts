@@ -57,7 +57,7 @@ export class ClubController {
   })
   @ApiOkResponse({ type: Club })
   @Get(':id')
- findClubById(@Param('id') id: number) {
+  findClubById(@Param('id') id: number) {
     return this.clubService.findClubById(id);
   }
 
@@ -105,10 +105,9 @@ export class ClubController {
     createClubDto.owner = '로그인userid';
     const createdClub = await this.clubService.createClub(createClubDto);
     if (files.length > 0) {
-     await this.imageService.uploadImageOnClub(createdClub.id,files);
+      await this.imageService.uploadImageOnClub(createdClub.id, files);
     }
     return await this.findClubById(createdClub.id);
-   
   }
 
   @ApiOperation({
@@ -129,11 +128,11 @@ export class ClubController {
   async updateClub(
     @Param('id') id: number,
     @UploadedFiles() files: File[],
-    @Body() updateClubDto: UpdateClubDto) {
-    
+    @Body() updateClubDto: UpdateClubDto,
+  ) {
     if (files.length > 0) {
-      await this.imageService.uploadImageOnClub(id,files);
-     }
+      await this.imageService.uploadImageOnClub(id, files);
+    }
     return this.clubService.updateClub(id, updateClubDto);
   }
 

@@ -44,7 +44,7 @@ export class ClubService {
         title: createClubDto.title,
         description: createClubDto.description,
         owner: createClubDto.owner,
-        max: +createClubDto.max
+        max: +createClubDto.max,
       },
       include: {
         ClubImage: {

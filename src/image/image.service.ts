@@ -70,9 +70,9 @@ export class ImageService {
   async uploadImageOnClub(clubId: number, images: File[]) {
     //이전 이미지 삭제
     const clubImages = await this.findImageByClubId(clubId);
-    clubImages.map(async (image) => {
-      await this.cloudStorageService.removeFile(image.imageName);
-    });
+    for (const image of clubImages) {
+      this.cloudStorageService.removeFile(image.imageName);
+    }
     await this.prisma.image.deleteMany({
       where: { ClubImage: { some: { clubId } } },
     });

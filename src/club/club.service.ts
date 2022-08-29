@@ -15,7 +15,15 @@ export class ClubService {
   ) {}
 
   findClubs() {
-    return this.prisma.club.findMany();
+    return this.prisma.club.findMany({
+      include: {
+        ClubImage: {
+          include: {
+            Image: true,
+          },
+        },
+      },
+    });
   }
   async findClubById(id: number) {
     return await this.prisma.club.findUnique({
@@ -64,6 +72,13 @@ export class ClubService {
         description: updateClubDto.description,
         owner: updateClubDto.owner,
         max: +updateClubDto.max,
+      },
+      include: {
+        ClubImage: {
+          include: {
+            Image: true,
+          },
+        },
       },
     });
   }

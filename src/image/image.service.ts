@@ -103,8 +103,8 @@ export class ImageService {
         },
       });
       imageIds.push(data.id);
-      return imageIds;
     }
+    return imageIds;
   }
 
   async findImageByIds(ids: number[]) {

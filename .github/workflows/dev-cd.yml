@@ -9,6 +9,7 @@ env:
   GITHUB_SHA: ${{ github.sha }}
   GITHUB_REF: ${{ github.ref }}
   GCP_REGION: asia-northeast3
+  DB_REGION: us-west1
   DOCKER_REPOSITORY: asia-northeast3-docker.pkg.dev
   ARTIFACT_REGISTRY: moa-moa-backend-art
   SERVICE_NAME: moa-moa-backend-run
@@ -68,7 +69,7 @@ jobs:
         uses: google-github-actions/deploy-cloudrun@v0
         with:
           service: ${{ env.SERVICE_NAME }} #Cloud Run service name
-          region: ${{ env.GCP_REGION }}
+          region: ${{ env.DB_REGION }}
           image: ${{ env.DOCKER_IMAGE_NAME }}
           credentials: ${{ secrets.SERVICE_ACCOUNT_KEY}}
           env_vars: DATABASE_URL=${{ secrets.STG_DATABASE_URL }}

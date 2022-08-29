@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaClient } from '@prisma/client';
+import { ImageModule } from '../image/image.module';
 import { CategoryModule } from '../category/category.module';
 import { PrismaModule } from '../common/prisma.module';
 import { ClubService } from './club.service';
@@ -10,7 +11,11 @@ describe('ClubService', () => {
   const prismaClient = new PrismaClient();
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [PrismaModule.forTest(prismaClient), CategoryModule],
+      imports: [
+        PrismaModule.forTest(prismaClient),
+        CategoryModule,
+        ImageModule,
+      ],
       providers: [ClubService],
     }).compile();
 

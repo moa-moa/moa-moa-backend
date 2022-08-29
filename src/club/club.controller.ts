@@ -6,13 +6,21 @@ import {
   Param,
   Patch,
   Post,
+  UploadedFiles,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import {
+  ApiBody,
+  ApiConsumes,
+  ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+import { File } from '../common/file.interface';
+import { ImageService } from '../image/image.service';
 import { ClubService } from './club.service';
 import { CreateClubDto } from './dto/create-club.dto';
 import { UpdateClubDto } from './dto/update-club.dto';
@@ -21,7 +29,10 @@ import { Club } from './model/club.model';
 @ApiTags('Club')
 @Controller('club')
 export class ClubController {
-  constructor(private readonly clubService: ClubService) {}
+  constructor(
+    private readonly clubService: ClubService,
+    private readonly imageService: ImageService,
+  ) {}
 
   @ApiOperation({
     summary: '클럽 목록 조회',
@@ -50,15 +61,53 @@ export class ClubController {
     return this.clubService.findClubById(id);
   }
 
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        categoryId: {
+          type: 'string',
+        },
+        title: {
+          type: 'string',
+        },
+        description: {
+          type: 'string',
+        },
+        owner: {
+          type: 'string',
+        },
+        max: {
+          type: 'string',
+        },
+        files: {
+          type: 'array',
+          items: {
+            type: 'string',
+            format: 'binary',
+          },
+        },
+      },
+    },
+  })
   @ApiOperation({
     summary: '클럽 1개 생성',
     description: 'Club 모델 하나를 생성합니다.',
   })
-  @ApiOkResponse({ type: Club })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FilesInterceptor('files', 10)) //업로드파일을 10개로 제한
+  @ApiCreatedResponse({ type: Club })
   @Post()
-  createClub(@Body() createClubDto: CreateClubDto) {
+  async createClub(
+    @UploadedFiles() files: File[],
+    @Body() createClubDto: CreateClubDto,
+  ) {
     createClubDto.owner = '로그인userid';
-    return this.clubService.createClub(createClubDto);
+    const createdClub = await this.clubService.createClub(createClubDto);
+    if (files.length > 0) {
+      await this.imageService.uploadImageOnClub(createdClub.id, files);
+    }
+    return await this.findClubById(createdClub.id);
   }
 
   @ApiOperation({
@@ -72,9 +121,18 @@ export class ClubController {
     description: 'Club 모델의 Id값입니다.',
     example: 1,
   })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FilesInterceptor('files', 10)) //업로드파일을 10개로 제한
   @ApiOkResponse({ type: Club })
   @Patch(':id')
-  updateClub(@Param('id') id: number, @Body() updateClubDto: UpdateClubDto) {
+  async updateClub(
+    @Param('id') id: number,
+    @UploadedFiles() files: File[],
+    @Body() updateClubDto: UpdateClubDto,
+  ) {
+    if (files.length > 0) {
+      await this.imageService.uploadImageOnClub(id, files);
+    }
     return this.clubService.updateClub(id, updateClubDto);
   }
 

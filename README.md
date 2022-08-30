@@ -26,7 +26,7 @@ $ npm install
 sh run-mysql.sh
 ```
 ## 🚩 DB Schema (Latest Version)
-https://dbdiagram.io/d/62e8bae2f31da965e85cc2a0
+https://dbdiagram.io/d/630df7580911f91ba5f74b18
 
 ## 🚩 Running the app
 

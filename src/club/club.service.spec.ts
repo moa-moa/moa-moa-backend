@@ -4,6 +4,7 @@ import { ImageModule } from '../image/image.module';
 import { CategoryModule } from '../category/category.module';
 import { PrismaModule } from '../common/prisma.module';
 import { ClubService } from './club.service';
+import { UserModule } from '../user/user.module';
 
 describe('ClubService', () => {
   let service: ClubService;
@@ -15,6 +16,7 @@ describe('ClubService', () => {
         PrismaModule.forTest(prismaClient),
         CategoryModule,
         ImageModule,
+        UserModule,
       ],
       providers: [ClubService],
     }).compile();

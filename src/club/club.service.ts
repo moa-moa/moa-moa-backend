@@ -100,4 +100,19 @@ export class ClubService {
     return await this.prisma.club.delete({ where: { id } });
   }
 
+  
+  async joinClub(clubId: number, userId: string) {
+    return await this.prisma.userJoinedClub.create({
+      data: { userId, clubId },
+      include: { User: true, Club: true },
+    });
+  }
+
+  async likeClub(clubId: number, userId: string) {
+    return await this.prisma.userLikedClub.create({
+      data: { userId, clubId },
+      include: { User: true, Club: true },
+    });
+  }
+
 }

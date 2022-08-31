@@ -46,7 +46,7 @@ export class AuthController {
       httpOnly: true,
       secure: true,
     });
-    return res.status(200).json({ tokens });
+    return res.status(200).json({ accessToken: tokens.accessToken});
   }
   @Get('logout')
   logout(@Req() req: Request) {
@@ -75,6 +75,6 @@ export class AuthController {
       httpOnly: true,
       secure: true,
     });
-    return res.status(200).json(tokens);
+    return res.status(200).json({ accessToken: tokens.accessToken});
   }
 }

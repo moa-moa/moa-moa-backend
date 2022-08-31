@@ -7,7 +7,7 @@ import { AtStrategy } from '../auth/at.strategy';
 @Module({
   imports: [PrismaModule],
   controllers: [CategoryController],
-  providers: [CategoryService, AtStrategy],
+  providers: [CategoryService],
   exports: [CategoryService],
 })
 export class CategoryModule {}

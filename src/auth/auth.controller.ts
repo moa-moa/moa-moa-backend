@@ -42,23 +42,25 @@ export class AuthController {
 
     await this.userService.findByIdOrSaveOrTokenUpdate(userData);
 
-    res.setHeader('Authorization', tokens.accessToken);
-    res.cookie('refresh-token', tokens.refreshToken);
-
-    return res.status(200).json(tokens);
+    res.cookie('refreshToken', tokens.refreshToken, {
+      httpOnly: true,
+      secure: true,
+    });
+    return res.status(200).json({ tokens });
   }
-  @Get('/logout')
+  @Get('logout')
   logout(@Req() req: Request) {
     const user = req.user;
     return this.userService.logout(user['id']);
   }
 
-  @Get('refresh')
+  @Get('auto-login')
   @UseGuards(AuthGuard('jwt-refresh'))
   async refreshToken(@Req() req: Request, @Res() res: Response) {
     const { refreshToken, sub, email } = req.user as JwtPayload & {
       refreshToken: string;
     };
+    //refresh Token 검증
     const checkUser = await this.userService.findByIdAndCheckRT(
       sub,
       refreshToken,
@@ -69,6 +71,10 @@ export class AuthController {
     const hashtedRt = await this.authService.preHash(tokens.refreshToken);
     await this.userService.updateHashedRefreshToken(checkUser.id, hashtedRt);
 
-    res.status(200).json(tokens);
+    res.cookie('refreshToken', tokens.refreshToken, {
+      httpOnly: true,
+      secure: true,
+    });
+    return res.status(200).json(tokens);
   }
 }

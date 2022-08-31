@@ -17,7 +17,8 @@ export class CreateClubDto {
   description: string;
 
   @IsString()
-  @ApiProperty({ description: 'user id' })
+  @IsOptional()
+  @ApiProperty({ description: 'user id', required: false })
   owner: string;
 
   //  @IsNumber()
@@ -26,6 +27,6 @@ export class CreateClubDto {
   max?: string;
 
   @IsOptional()
-  @ApiPropertyOptional({ type: [String], format: 'binary' })
+  @ApiPropertyOptional({ type: [String], required: false, format: 'binary' })
   files?: File[];
 }

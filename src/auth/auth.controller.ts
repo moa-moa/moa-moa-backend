@@ -2,7 +2,7 @@ import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
 import passport from 'passport';
-import { CreateUserDto } from 'src/user/dto/create-user.dto';
+import { CreateUserDto } from '../user/dto/create-user.dto';
 import { UserService } from '../user/user.service';
 import { AuthService } from './auth.service';
 import { JwtPayload } from './jwtPayload.type';
@@ -46,7 +46,7 @@ export class AuthController {
       httpOnly: true,
       secure: true,
     });
-    return res.status(200).json({ accessToken: tokens.accessToken});
+    return res.status(200).json({ accessToken: tokens.accessToken });
   }
   @Get('logout')
   logout(@Req() req: Request) {
@@ -75,6 +75,6 @@ export class AuthController {
       httpOnly: true,
       secure: true,
     });
-    return res.status(200).json({ accessToken: tokens.accessToken});
+    return res.status(200).json({ accessToken: tokens.accessToken });
   }
 }

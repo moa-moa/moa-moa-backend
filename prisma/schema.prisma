@@ -25,9 +25,9 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  UserLikedClub   UserLikedClub[]
-  UserJoinedClub  UserJoinedClub[]
-  UserCreatedClub UserCreatedClub[]
+  Club           Club[]
+  UserLikedClub  UserLikedClub[]
+  UserJoinedClub UserJoinedClub[]
 }
 
 model Category {
@@ -41,16 +41,16 @@ model Club {
   id          Int      @id @default(autoincrement())
   title       String
   description String
+  User        User     @relation(fields: [owner], references: [id])
   owner       String
   isAvailable Boolean  @default(true)
   max         Int?
   Category    Category @relation(fields: [categoryId], references: [id])
   categoryId  Int
 
-  ClubImage       ClubImage[]
-  UserLikedClub   UserLikedClub[]
-  UserJoinedClub  UserJoinedClub[]
-  UserCreatedClub UserCreatedClub[]
+  ClubImage      ClubImage[]
+  UserLikedClub  UserLikedClub[]
+  UserJoinedClub UserJoinedClub[]
 }
 
 model ClubImage {
@@ -63,9 +63,9 @@ model ClubImage {
 }
 
 model Image {
-  id       Int       @id @default(autoincrement())
-  type     ImageType @default(USER)
-  imageUrl String
+  id        Int       @id @default(autoincrement())
+  type      ImageType @default(USER)
+  imageUrl  String
   imageName String
 
   ClubImage ClubImage[]
@@ -88,15 +88,6 @@ model UserLikedClub {
 }
 
 model UserJoinedClub {
-  User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String
-  Club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  clubId Int
-
-  @@id([userId, clubId])
-}
-
-model UserCreatedClub {
   User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
   Club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)

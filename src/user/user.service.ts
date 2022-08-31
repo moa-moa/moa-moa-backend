@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { User } from '@prisma/client';
 import * as argon from 'argon2';
 import { PrismaService } from '../common/prisma.service';
@@ -56,8 +56,10 @@ export class UserService {
     return await this.prisma.user.delete({ where: { id } });
   }
 
-  async findByIdAndCheckRT(id: string, rt: string) {
+  async findByIdAndCheckRT(id: string, rt: string): Promise<User> {
     const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) throw new UnauthorizedException();
+
     const match = await argon.verify(user.hashedRt, rt);
     if (match) return user;
     else throw new Error('Refresh Tokens do not match.');

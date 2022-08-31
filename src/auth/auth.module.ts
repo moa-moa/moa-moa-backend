@@ -5,10 +5,12 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { UserModule } from '../user/user.module';
 import { RtStrategy } from './rt.strategy';
+import { PrismaModule } from '../common/prisma.module';
+import { AtStrategy } from './at.strategy';
 
 @Module({
-  imports: [JwtModule.register({}), UserModule],
+  imports: [PrismaModule, UserModule, JwtModule.register({})],
   controllers: [AuthController],
-  providers: [GoogleStrategy, AuthService, RtStrategy],
+  providers: [GoogleStrategy, AuthService, RtStrategy, AtStrategy],
 })
 export class AuthModule {}

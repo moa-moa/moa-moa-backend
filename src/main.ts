@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { PrismaService } from './common/prisma.service';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -19,6 +20,7 @@ async function bootstrap() {
     }),
   );
   const port = parseInt(process.env.PORT) || 3000;
+  app.use(cookieParser());
   await app.listen(port, () => {
     console.log('Hello world listening on port', port);
   });

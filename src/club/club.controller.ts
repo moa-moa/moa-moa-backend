@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -157,7 +159,6 @@ export class ClubController {
   @Patch(':id')
   async updateClub(
     @Req() req: Request,
-    @Res() res: Response,
     @UploadedFiles() files: File[],
     @Body() updateClubDto: UpdateClubDto,
   ) {
@@ -166,12 +167,10 @@ export class ClubController {
 
     const club = await this.clubService.findClubById(id);
     if (!club)
-      return res
-        .status(403)
-        .json({ message: `Could not find Book with id ${id}` });
+    throw new HttpException(`Could not find Club with id ${id}`, HttpStatus.FORBIDDEN);
 
     if (club.owner !== user.id)
-      return res.status(403).json({ message: 'You are not Club owner' });
+    throw new HttpException('You are not Club owner' , HttpStatus.FORBIDDEN);
 
     if (files.length > 0) {
       await this.imageService.uploadImageOnClub(id, files);
@@ -193,18 +192,16 @@ export class ClubController {
   @ApiOkResponse({ type: Club })
   @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
-  async deleteClub(@Req() req: Request, @Res() res: Response) {
+  async deleteClub(@Req() req: Request) {
     const user = req.user as User;
     const id = +req.params.id;
 
     const club = await this.clubService.findClubById(id);
     if (!club)
-      return res
-        .status(403)
-        .json({ message: `Could not find Club with id ${id}` });
+    throw new HttpException(`Could not find Club with id ${id}`, HttpStatus.FORBIDDEN);
 
     if (club.owner !== user.id)
-      return res.status(403).json({ message: 'You are not Club owner' });
+    throw new HttpException('You are not Club owner', HttpStatus.FORBIDDEN);
 
     return this.clubService.deleteClub(id);
   }
@@ -226,21 +223,22 @@ export class ClubController {
   })
   @UseGuards(AuthGuard('jwt'))
   @Post('/join')
-  async joinClub(@Req() req: Request, @Res() res: Response) {
+  async joinClub(@Req() req: Request) {
     const user = req.user as User;
     const clubId = +req.body.clubId;
 
     const club = await this.clubService.findClubById(clubId);
     if (!club)
-      return res
-        .status(403)
-        .json({ message: `Could not find Club with id ${clubId}` });
+      throw new HttpException(`Could not find Club with id ${clubId}`, HttpStatus.FORBIDDEN);
     const joinedUser = club.UserJoinedClub;
 
     if (joinedUser.some((v) => v.userId === user.id))
-      res.status(403).json({ message: `이미 해당 클럽에 소속 된 유저입니다.` });
+      throw new HttpException('이미 해당 클럽에 소속 된 유저입니다.', HttpStatus.FORBIDDEN);
 
-    return this.clubService.joinClub(club.id, user.id);
+    if (club.max <= joinedUser.length)
+      throw new HttpException('클럽 모집인원이 마감되었습니다.', HttpStatus.FORBIDDEN);
+      
+    return await this.clubService.joinClub(club.id, user.id);
   }
 
   //TODO : 찜하기, 찜 해제하기를 한번에 묶었습니다. 이미 찜하기를 눌렀다면 찜하기가 해제됩니다.
@@ -267,9 +265,7 @@ export class ClubController {
 
     const club = await this.clubService.findClubById(clubId);
     if (!club)
-      return res
-        .status(403)
-        .json({ message: `Could not find Club with id ${clubId}` });
+    throw new HttpException(`Could not find Club with id ${clubId}`, HttpStatus.FORBIDDEN);
 
     const likedUser = club.UserLikedClub;
     if (likedUser.some((v) => v.userId === user.id)) {
@@ -277,7 +273,7 @@ export class ClubController {
       return this.clubService.deleteLikedClub(club.id, user.id);
     }
 
-    return this.clubService.likeClub(club.id, user.id);
+    return await this.clubService.likeClub(club.id, user.id);
   }
 }
 

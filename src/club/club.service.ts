@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { Club } from '@prisma/client';
+import { Club, Prisma } from '@prisma/client';
 import { CategoryService } from '../category/category.service';
 import { PrismaService } from '../common/prisma.service';
 import { CreateClubDto } from './dto/create-club.dto';
@@ -12,24 +12,16 @@ export class ClubService {
     private readonly categoryService: CategoryService,
   ) {}
 
-  // TODO: include 할 객체를 지정해야합니다
-  findClubs() {
-    return this.prisma.club.findMany({
-      include: {
-        UserJoinedClub: {
-          include: {
-            User: true,
-          },
-        },
-        ClubImage: {
-          include: {
-            Image: true,
-          },
-        },
-      },
-    });
+  findClubs(options?: Prisma.ClubFindManyArgs): Promise<Club[]> {
+    const query: Prisma.ClubFindManyArgs = {};
+
+    if (options?.include) {
+      query.include = options.include;
+    }
+    return this.prisma.club.findMany(query);
   }
-  async findClubById(id: number) {
+
+  async findClubById(id: number): Promise<Club> {
     return await this.prisma.club.findUnique({
       where: { id },
       include: {

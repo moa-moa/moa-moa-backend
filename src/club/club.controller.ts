@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   Res,
   UploadedFiles,
@@ -20,6 +21,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 import { File } from '../common/file.interface';
@@ -29,7 +31,7 @@ import { CreateClubDto } from './dto/create-club.dto';
 import { Club } from './model/club.model';
 import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
-import { User } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 import { UpdateClubDto } from './dto/update-club.dto';
 
 @ApiTags('Club')
@@ -44,10 +46,25 @@ export class ClubController {
     summary: '클럽 목록 조회',
     description: 'Club 모델 전체를 조회합니다.',
   })
+  @ApiQuery({
+    name: 'joinedUser',
+    description: '클럽에 참여한 유저정보를 함께 가져올지 결정합니다.',
+    type: Boolean,
+    required: false,
+  })
+  @ApiQuery({
+    name: 'likedUser',
+    description: '클럽을 찜한 유저정보를 함께 가져올지 결정합니다.',
+    type: Boolean,
+    required: false,
+  })
   @ApiOkResponse({ type: [Club] })
   @Get()
-  findClubs() {
-    return this.clubService.findClubs();
+  findClubs(
+    @Query('joinedUser') joinedUser?: boolean,
+    @Query('likedUser') likedUser?: boolean,
+  ) {
+    return this.clubService.findClubs(buildQuery({ joinedUser, likedUser }));
   }
 
   @ApiOperation({
@@ -189,4 +206,42 @@ export class ClubController {
 
     return this.clubService.deleteClub(id);
   }
+}
+
+export type BuildQueryOptions = {
+  joinedUser: boolean;
+  likedUser: boolean;
+};
+
+function buildQuery(
+  options?: Partial<BuildQueryOptions>,
+): Prisma.ClubFindManyArgs {
+  const query: Prisma.ClubFindManyArgs = {
+    include: {
+      UserJoinedClub: true,
+      UserLikedClub: true,
+    },
+  };
+  if (!options) {
+    return query;
+  }
+
+  const { joinedUser, likedUser } = options;
+
+  if (joinedUser) {
+    query.include.UserJoinedClub = {
+      include: {
+        User: true,
+      },
+    };
+  }
+  if (likedUser) {
+    query.include.UserLikedClub = {
+      include: {
+        User: true,
+      },
+    };
+  }
+
+  return query;
 }

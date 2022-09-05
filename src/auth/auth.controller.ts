@@ -46,7 +46,7 @@ export class AuthController {
       httpOnly: true,
       secure: true,
     });
-   // return res.status(200).json(tokens);
+    // return res.status(200).json(tokens);
     return res.status(200).redirect('http://localhost:3001/'); // webfront home
   }
   @Get('logout')

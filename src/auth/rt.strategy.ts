@@ -28,7 +28,9 @@ export class RtStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
   validate(req: Request, payload: JwtPayload) {
     const refreshToken = req.cookies['refreshToken'];
     try {
-      this.jwtService.verify(refreshToken, { secret: process.env.REFRSH_JWT_SECRET });
+      this.jwtService.verify(refreshToken, {
+        secret: process.env.REFRSH_JWT_SECRET,
+      });
       return {
         ...payload,
         refreshToken,

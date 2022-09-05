@@ -6,7 +6,10 @@ import {
   Param,
   Patch,
   Post,
+  Req,
+  Res,
   UploadedFiles,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -23,8 +26,11 @@ import { File } from '../common/file.interface';
 import { ImageService } from '../image/image.service';
 import { ClubService } from './club.service';
 import { CreateClubDto } from './dto/create-club.dto';
-import { UpdateClubDto } from './dto/update-club.dto';
 import { Club } from './model/club.model';
+import { AuthGuard } from '@nestjs/passport';
+import { Request, Response } from 'express';
+import { User } from '@prisma/client';
+import { UpdateClubDto } from './dto/update-club.dto';
 
 @ApiTags('Club')
 @Controller('club')
@@ -66,7 +72,8 @@ export class ClubController {
       type: 'object',
       properties: {
         categoryId: {
-          type: 'string',
+          type: 'number',
+          nullable: false,
         },
         title: {
           type: 'string',
@@ -74,14 +81,13 @@ export class ClubController {
         description: {
           type: 'string',
         },
-        owner: {
-          type: 'string',
-        },
         max: {
-          type: 'string',
+          type: 'number',
+          nullable: true,
         },
         files: {
           type: 'array',
+          nullable: true,
           items: {
             type: 'string',
             format: 'binary',
@@ -97,19 +103,23 @@ export class ClubController {
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FilesInterceptor('files', 10)) //업로드파일을 10개로 제한
   @ApiCreatedResponse({ type: Club })
+  @UseGuards(AuthGuard('jwt'))
   @Post()
   async createClub(
+    @Req() req: Request,
     @UploadedFiles() files: File[],
     @Body() createClubDto: CreateClubDto,
   ) {
-    createClubDto.owner = '로그인userid';
+    const user = req.user as User;
+    createClubDto.owner = user.id; //100306381267430826077
+
     const createdClub = await this.clubService.createClub(createClubDto);
+    console.log('files', files);
     if (files.length > 0) {
       await this.imageService.uploadImageOnClub(createdClub.id, files);
     }
     return await this.findClubById(createdClub.id);
   }
-
   @ApiOperation({
     summary: '클럽 1개 수정',
     description: 'Club 모델 하나를 수정합니다.',
@@ -124,12 +134,26 @@ export class ClubController {
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FilesInterceptor('files', 10)) //업로드파일을 10개로 제한
   @ApiOkResponse({ type: Club })
+  @UseGuards(AuthGuard('jwt'))
   @Patch(':id')
   async updateClub(
-    @Param('id') id: number,
+    @Req() req: Request,
+    @Res() res: Response,
     @UploadedFiles() files: File[],
     @Body() updateClubDto: UpdateClubDto,
   ) {
+    const user = req.user as User;
+    const id = +req.params.id;
+
+    const club = await this.clubService.findClubById(id);
+    if (!club)
+      return res
+        .status(403)
+        .json({ message: `Could not find Book with id ${id}` });
+
+    if (club.owner !== user.id)
+      return res.status(403).json({ message: 'You are not Club owner' });
+
     if (files.length > 0) {
       await this.imageService.uploadImageOnClub(id, files);
     }
@@ -148,8 +172,21 @@ export class ClubController {
     example: 1,
   })
   @ApiOkResponse({ type: Club })
+  @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
-  deleteClub(@Param('id') id: number) {
+  async deleteClub(@Req() req: Request, @Res() res: Response) {
+    const user = req.user as User;
+    const id = +req.params.id;
+
+    const club = await this.clubService.findClubById(id);
+    if (!club)
+      return res
+        .status(403)
+        .json({ message: `Could not find Club with id ${id}` });
+
+    if (club.owner !== user.id)
+      return res.status(403).json({ message: 'You are not Club owner' });
+
     return this.clubService.deleteClub(id);
   }
 }

@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Club } from '@prisma/client';
-import { ImageService } from '../image/image.service';
 import { CategoryService } from '../category/category.service';
 import { PrismaService } from '../common/prisma.service';
 import { CreateClubDto } from './dto/create-club.dto';
@@ -11,12 +10,17 @@ export class ClubService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly categoryService: CategoryService,
-    private readonly imageService: ImageService,
   ) {}
 
+  // TODO: include 할 객체를 지정해야합니다
   findClubs() {
     return this.prisma.club.findMany({
       include: {
+        UserJoinedClub: {
+          include: {
+            User: true,
+          },
+        },
         ClubImage: {
           include: {
             Image: true,
@@ -29,6 +33,16 @@ export class ClubService {
     return await this.prisma.club.findUnique({
       where: { id },
       include: {
+        UserJoinedClub: {
+          include: {
+            User: true,
+          },
+        },
+        UserLikedClub: {
+          include: {
+            User: true,
+          },
+        },
         ClubImage: {
           include: {
             Image: true,
@@ -52,7 +66,7 @@ export class ClubService {
         title: createClubDto.title,
         description: createClubDto.description,
         owner: createClubDto.owner,
-        max: +createClubDto.max,
+        max: +createClubDto.max || null,
       },
       include: {
         ClubImage: {
@@ -66,13 +80,7 @@ export class ClubService {
   async updateClub(id: number, updateClubDto: UpdateClubDto) {
     return await this.prisma.club.update({
       where: { id },
-      data: {
-        categoryId: +updateClubDto.categoryId,
-        title: updateClubDto.title,
-        description: updateClubDto.description,
-        owner: updateClubDto.owner,
-        max: +updateClubDto.max,
-      },
+      data: { ...updateClubDto },
       include: {
         ClubImage: {
           include: {

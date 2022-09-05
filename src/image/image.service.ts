@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { File } from '../common/file.interface';
 import { CloudStorageService } from '../common/cloud-storage.service';
 import { PrismaService } from '../common/prisma.service';
+import { Image } from '@prisma/client';
 
 @Injectable()
 export class ImageService {
@@ -38,7 +39,7 @@ export class ImageService {
       throw new BadRequestException(`Image did not transferred`);
     }
   }
-  async findAvatarByUserId(userId: string) {
+  async findAvatarByUserId(userId: string): Promise<Image> {
     const image = await this.prisma.image.findUnique({ where: { userId } });
 
     if (!image) {

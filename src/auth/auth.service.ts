@@ -16,13 +16,13 @@ export class AuthService {
     const accessToken = await this.jwtService.signAsync(jwtPayload, {
       issuer: 'moamoa.com',
       expiresIn: '2h',
-      secret: process.env.JWT_SECRET,
+      secret: process.env.ACCESS_JWT_SECRET,
     });
 
     const refreshToken = await this.jwtService.signAsync(jwtPayload, {
       issuer: 'moamoa.com',
       expiresIn: '14d',
-      secret: process.env.JWT_SECRET,
+      secret: process.env.REFRSH_JWT_SECRET,
     });
 
     return { accessToken, refreshToken };

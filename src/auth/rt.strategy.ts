@@ -18,7 +18,7 @@ export class RtStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
           return req.cookies['refreshToken'];
         },
       ]),
-      secretOrKey: process.env.JWT_SECRET,
+      secretOrKey: process.env.REFRSH_JWT_SECRET,
       passReqToCallback: true,
       // //true로 설정하면 Passport에 토큰 검증을 위임하지 않고 직접 검증, false는 Passport에 검증 위임
       ignoreExpiration: true,
@@ -28,7 +28,7 @@ export class RtStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
   validate(req: Request, payload: JwtPayload) {
     const refreshToken = req.cookies['refreshToken'];
     try {
-      this.jwtService.verify(refreshToken, { secret: process.env.JWT_SECRET });
+      this.jwtService.verify(refreshToken, { secret: process.env.REFRSH_JWT_SECRET });
       return {
         ...payload,
         refreshToken,

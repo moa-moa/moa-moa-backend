@@ -10,13 +10,13 @@ import {
   Post,
   Query,
   Req,
-  Res,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiConsumes,
   ApiCreatedResponse,
@@ -32,11 +32,12 @@ import { ClubService } from './club.service';
 import { CreateClubDto } from './dto/create-club.dto';
 import { Club } from './model/club.model';
 import { AuthGuard } from '@nestjs/passport';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 import { Prisma, User } from '@prisma/client';
 import { UpdateClubDto } from './dto/update-club.dto';
 
 @ApiTags('Club')
+@ApiBearerAuth('accessToken')
 @UseGuards(AuthGuard('jwt'))
 @Controller('club')
 export class ClubController {
@@ -166,10 +167,13 @@ export class ClubController {
 
     const club = await this.clubService.findClubById(id);
     if (!club)
-    throw new HttpException(`Could not find Club with id ${id}`, HttpStatus.FORBIDDEN);
+      throw new HttpException(
+        `Could not find Club with id ${id}`,
+        HttpStatus.FORBIDDEN,
+      );
 
     if (club.owner !== user.id)
-    throw new HttpException('You are not Club owner' , HttpStatus.FORBIDDEN);
+      throw new HttpException('You are not Club owner', HttpStatus.FORBIDDEN);
 
     if (files.length > 0) {
       await this.imageService.uploadImageOnClub(id, files);
@@ -196,10 +200,13 @@ export class ClubController {
 
     const club = await this.clubService.findClubById(id);
     if (!club)
-    throw new HttpException(`Could not find Club with id ${id}`, HttpStatus.FORBIDDEN);
+      throw new HttpException(
+        `Could not find Club with id ${id}`,
+        HttpStatus.FORBIDDEN,
+      );
 
     if (club.owner !== user.id)
-    throw new HttpException('You are not Club owner', HttpStatus.FORBIDDEN);
+      throw new HttpException('You are not Club owner', HttpStatus.FORBIDDEN);
 
     return this.clubService.deleteClub(id);
   }
@@ -226,15 +233,24 @@ export class ClubController {
 
     const club = await this.clubService.findClubById(clubId);
     if (!club)
-      throw new HttpException(`Could not find Club with id ${clubId}`, HttpStatus.FORBIDDEN);
+      throw new HttpException(
+        `Could not find Club with id ${clubId}`,
+        HttpStatus.FORBIDDEN,
+      );
     const joinedUser = club.UserJoinedClub;
 
     if (joinedUser.some((v) => v.userId === user.id))
-      throw new HttpException('이미 해당 클럽에 소속 된 유저입니다.', HttpStatus.FORBIDDEN);
+      throw new HttpException(
+        '이미 해당 클럽에 소속 된 유저입니다.',
+        HttpStatus.FORBIDDEN,
+      );
 
     if (club.max <= joinedUser.length)
-      throw new HttpException('클럽 모집인원이 마감되었습니다.', HttpStatus.FORBIDDEN);
-      
+      throw new HttpException(
+        '클럽 모집인원이 마감되었습니다.',
+        HttpStatus.FORBIDDEN,
+      );
+
     return await this.clubService.joinClub(club.id, user.id);
   }
 
@@ -255,13 +271,16 @@ export class ClubController {
     },
   })
   @Post('/like')
-  async likeClub(@Req() req: Request, @Res() res: Response) {
+  async likeClub(@Req() req: Request) {
     const user = req.user as User;
     const clubId = +req.body.clubId;
 
     const club = await this.clubService.findClubById(clubId);
     if (!club)
-    throw new HttpException(`Could not find Club with id ${clubId}`, HttpStatus.FORBIDDEN);
+      throw new HttpException(
+        `Could not find Club with id ${clubId}`,
+        HttpStatus.FORBIDDEN,
+      );
 
     const likedUser = club.UserLikedClub;
     if (likedUser.some((v) => v.userId === user.id)) {

@@ -1,7 +1,6 @@
 import {
   Controller,
   Delete,
-  Param,
   Post,
   Req,
   UploadedFile,
@@ -15,7 +14,6 @@ import {
   ApiConsumes,
   ApiOkResponse,
   ApiOperation,
-  ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
 import { Request } from 'express';
@@ -51,9 +49,7 @@ export class UserController {
   @ApiConsumes('multipart/form-data')
   @Post('avatar/upload')
   @UseInterceptors(FileInterceptor('file'))
-  async upload(
-    @Req() req: Request,@UploadedFile() file: File) {
-      
+  async upload(@Req() req: Request, @UploadedFile() file: File) {
     const user = req.user as User;
     const id = user.id;
 
@@ -68,7 +64,7 @@ export class UserController {
   })
   @ApiOkResponse({ type: User })
   @Delete('avatar/reset')
-  async deleteUser( @Req() req: Request,) {
+  async deleteUser(@Req() req: Request) {
     const user = req.user as User;
     const id = user.id;
 

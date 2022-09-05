@@ -37,6 +37,7 @@ import { Prisma, User } from '@prisma/client';
 import { UpdateClubDto } from './dto/update-club.dto';
 
 @ApiTags('Club')
+@UseGuards(AuthGuard('jwt'))
 @Controller('club')
 export class ClubController {
   constructor(
@@ -122,7 +123,6 @@ export class ClubController {
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FilesInterceptor('files', 10)) //업로드파일을 10개로 제한
   @ApiCreatedResponse({ type: Club })
-  @UseGuards(AuthGuard('jwt'))
   @Post()
   async createClub(
     @Req() req: Request,
@@ -155,7 +155,6 @@ export class ClubController {
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FilesInterceptor('files', 10)) //업로드파일을 10개로 제한
   @ApiOkResponse({ type: Club })
-  @UseGuards(AuthGuard('jwt'))
   @Patch(':id')
   async updateClub(
     @Req() req: Request,
@@ -190,7 +189,6 @@ export class ClubController {
     example: 1,
   })
   @ApiOkResponse({ type: Club })
-  @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
   async deleteClub(@Req() req: Request) {
     const user = req.user as User;
@@ -221,7 +219,6 @@ export class ClubController {
       },
     },
   })
-  @UseGuards(AuthGuard('jwt'))
   @Post('/join')
   async joinClub(@Req() req: Request) {
     const user = req.user as User;
@@ -257,7 +254,6 @@ export class ClubController {
       },
     },
   })
-  @UseGuards(AuthGuard('jwt'))
   @Post('/like')
   async likeClub(@Req() req: Request, @Res() res: Response) {
     const user = req.user as User;

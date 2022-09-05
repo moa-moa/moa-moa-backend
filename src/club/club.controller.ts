@@ -131,10 +131,12 @@ export class ClubController {
     createClubDto.owner = user.id; //100306381267430826077
 
     const createdClub = await this.clubService.createClub(createClubDto);
-    console.log('files', files);
-    if (files.length > 0) {
+
+    if (files !== undefined && files.length > 0) {
       await this.imageService.uploadImageOnClub(createdClub.id, files);
     }
+
+    await this.clubService.joinClub(createdClub.id, user.id);
     return await this.findClubById(createdClub.id);
   }
   @ApiOperation({
@@ -205,6 +207,77 @@ export class ClubController {
       return res.status(403).json({ message: 'You are not Club owner' });
 
     return this.clubService.deleteClub(id);
+  }
+
+  @ApiOperation({
+    summary: '참여하기',
+    description: '해당 Club에 참여합니다.',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        clubId: {
+          type: 'number',
+          nullable: false,
+        },
+      },
+    },
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/join')
+  async joinClub(@Req() req: Request, @Res() res: Response) {
+    const user = req.user as User;
+    const clubId = +req.body.clubId;
+
+    const club = await this.clubService.findClubById(clubId);
+    if (!club)
+      return res
+        .status(403)
+        .json({ message: `Could not find Club with id ${clubId}` });
+    const joinedUser = club.UserJoinedClub;
+
+    if (joinedUser.some((v) => v.userId === user.id))
+      res.status(403).json({ message: `이미 해당 클럽에 소속 된 유저입니다.` });
+
+    return this.clubService.joinClub(club.id, user.id);
+  }
+
+  //TODO : 찜하기, 찜 해제하기를 한번에 묶었습니다. 이미 찜하기를 눌렀다면 찜하기가 해제됩니다.
+  @ApiOperation({
+    summary: '찜하기',
+    description: '해당 Club을 찜합니다.',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        clubId: {
+          type: 'number',
+          nullable: false,
+        },
+      },
+    },
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/like')
+  async likeClub(@Req() req: Request, @Res() res: Response) {
+    const user = req.user as User;
+    const clubId = +req.body.clubId;
+
+    const club = await this.clubService.findClubById(clubId);
+    if (!club)
+      return res
+        .status(403)
+        .json({ message: `Could not find Club with id ${clubId}` });
+
+    const likedUser = club.UserLikedClub;
+    if (likedUser.some((v) => v.userId === user.id)) {
+      //찜하기 해제
+      return this.clubService.deleteLikedClub(club.id, user.id);
+    }
+
+    return this.clubService.likeClub(club.id, user.id);
   }
 }
 

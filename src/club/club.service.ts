@@ -21,7 +21,7 @@ export class ClubService {
     return this.prisma.club.findMany(query);
   }
 
-  async findClubById(id: number): Promise<Club> {
+  async findClubById(id: number) {
     return await this.prisma.club.findUnique({
       where: { id },
       include: {
@@ -85,5 +85,25 @@ export class ClubService {
 
   async deleteClub(id: number): Promise<Club> {
     return await this.prisma.club.delete({ where: { id } });
+  }
+
+  async joinClub(clubId: number, userId: string) {
+    return await this.prisma.userJoinedClub.create({
+      data: { userId, clubId },
+      include: { User: true, Club: true },
+    });
+  }
+
+  async likeClub(clubId: number, userId: string) {
+    return await this.prisma.userLikedClub.create({
+      data: { userId, clubId },
+      include: { User: true, Club: true },
+    });
+  }
+  async deleteLikedClub(clubId: number, userId: string) {
+    return await this.prisma.userLikedClub.delete({
+      where: { userId_clubId: { clubId, userId } },
+      include: { User: true, Club: true },
+    });
   }
 }

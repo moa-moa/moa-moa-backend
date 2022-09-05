@@ -20,7 +20,7 @@ async function bootstrap() {
     }),
   );
   app.use(cookieParser());
-  app.enableCors()
+  app.enableCors();
   const port = parseInt(process.env.PORT) || 3000;
   await app.listen(port, () => {
     console.log('Hello world listening on port', port);

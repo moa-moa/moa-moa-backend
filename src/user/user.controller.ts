@@ -10,6 +10,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiConsumes,
   ApiOkResponse,
@@ -24,6 +25,7 @@ import { UserService } from './user.service';
 
 @ApiTags('User')
 @UseGuards(AuthGuard('jwt'))
+@ApiBearerAuth('accessToken')
 @Controller('user')
 export class UserController {
   constructor(

@@ -175,7 +175,7 @@ export class ClubController {
     if (club.owner !== user.id)
       throw new HttpException('You are not Club owner', HttpStatus.FORBIDDEN);
 
-    if (files.length > 0) {
+    if (files !== undefined && files.length > 0) {
       await this.imageService.uploadImageOnClub(id, files);
     }
     return this.clubService.updateClub(id, updateClubDto);

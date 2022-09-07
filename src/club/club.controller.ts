@@ -5,6 +5,7 @@ import {
   Get,
   HttpException,
   HttpStatus,
+  NotFoundException,
   Param,
   Patch,
   Post,
@@ -130,17 +131,25 @@ export class ClubController {
     @UploadedFiles() files: File[],
     @Body() createClubDto: CreateClubDto,
   ) {
-    const user = req.user as User;
-    createClubDto.owner = user.id; //100306381267430826077
+    try {
+      const user = req.user as User;
+      createClubDto.owner = user.id;
 
-    const createdClub = await this.clubService.createClub(createClubDto);
+      const createdClub = await this.clubService.createClub(createClubDto);
 
-    if (files !== undefined && files.length > 0) {
-      await this.imageService.uploadImageOnClub(createdClub.id, files);
+      if (files !== undefined && files.length > 0) {
+        await this.imageService.uploadImageOnClub(createdClub.id, files);
+      }
+
+      await this.clubService.joinClub(createdClub.id, user.id);
+      return await this.findClubById(createdClub.id);
+    } catch (e) {
+      // e instanceof Error 로는 catch 안됨
+      if ((e as Error).name === 'NotFoundError') {
+        throw new NotFoundException(e);
+      }
+      throw e;
     }
-
-    await this.clubService.joinClub(createdClub.id, user.id);
-    return await this.findClubById(createdClub.id);
   }
   @ApiOperation({
     summary: '클럽 1개 수정',
@@ -162,23 +171,31 @@ export class ClubController {
     @UploadedFiles() files: File[],
     @Body() updateClubDto: UpdateClubDto,
   ) {
-    const user = req.user as User;
-    const id = +req.params.id;
+    try {
+      const user = req.user as User;
+      const id = +req.params.id;
 
-    const club = await this.clubService.findClubById(id);
-    if (!club)
-      throw new HttpException(
-        `Could not find Club with id ${id}`,
-        HttpStatus.FORBIDDEN,
-      );
+      const club = await this.clubService.findClubById(id);
+      if (!club)
+        throw new HttpException(
+          `Could not find Club with id ${id}`,
+          HttpStatus.NOT_FOUND,
+        );
 
-    if (club.owner !== user.id)
-      throw new HttpException('You are not Club owner', HttpStatus.FORBIDDEN);
+      if (club.owner !== user.id)
+        throw new HttpException('You are not Club owner', HttpStatus.FORBIDDEN);
 
-    if (files !== undefined && files.length > 0) {
-      await this.imageService.uploadImageOnClub(id, files);
+      if (files !== undefined && files.length > 0) {
+        await this.imageService.uploadImageOnClub(id, files);
+      }
+      return this.clubService.updateClub(id, updateClubDto);
+    } catch (e) {
+      // e instanceof Error 로는 catch 안됨
+      if ((e as Error).name === 'NotFoundError') {
+        throw new NotFoundException(e);
+      }
+      throw e;
     }
-    return this.clubService.updateClub(id, updateClubDto);
   }
 
   @ApiOperation({
@@ -202,7 +219,7 @@ export class ClubController {
     if (!club)
       throw new HttpException(
         `Could not find Club with id ${id}`,
-        HttpStatus.FORBIDDEN,
+        HttpStatus.NOT_FOUND,
       );
 
     if (club.owner !== user.id)
@@ -235,11 +252,11 @@ export class ClubController {
     if (!club)
       throw new HttpException(
         `Could not find Club with id ${clubId}`,
-        HttpStatus.FORBIDDEN,
+        HttpStatus.NOT_FOUND,
       );
     const joinedUser = club.UserJoinedClub;
-
-    if (joinedUser.some((v) => v.userId === user.id))
+    const isUserJoined = joinedUser.some((v) => v.userId === user.id);
+    if (isUserJoined)
       throw new HttpException(
         '이미 해당 클럽에 소속 된 유저입니다.',
         HttpStatus.FORBIDDEN,
@@ -279,11 +296,11 @@ export class ClubController {
     if (!club)
       throw new HttpException(
         `Could not find Club with id ${clubId}`,
-        HttpStatus.FORBIDDEN,
+        HttpStatus.NOT_FOUND,
       );
 
-    const likedUser = club.UserLikedClub;
-    if (likedUser.some((v) => v.userId === user.id)) {
+    const isUserLiked = club.UserLikedClub.some((v) => v.userId === user.id);
+    if (isUserLiked) {
       //찜하기 해제
       return this.clubService.deleteLikedClub(club.id, user.id);
     }

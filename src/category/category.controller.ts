@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
@@ -24,6 +25,8 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Category } from './model/category.model';
 @ApiTags('Category')
+@UseGuards(AuthGuard('jwt'))
+@ApiBearerAuth('accessToken')
 @Controller('category')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
@@ -40,7 +43,6 @@ export class CategoryController {
   })
   @ApiOkResponse({ type: [Category] })
   @Get()
-  @UseGuards(AuthGuard('jwt'))
   findCategories(@Query('club') club?: boolean) {
     return this.categoryService.findCategories({
       include: buildQuery({ club }).include,

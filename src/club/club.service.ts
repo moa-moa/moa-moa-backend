@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { Club } from '@prisma/client';
-import { ImageService } from '../image/image.service';
+import { Club, Prisma } from '@prisma/client';
 import { CategoryService } from '../category/category.service';
 import { PrismaService } from '../common/prisma.service';
 import { CreateClubDto } from './dto/create-club.dto';
@@ -11,24 +10,31 @@ export class ClubService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly categoryService: CategoryService,
-    private readonly imageService: ImageService,
   ) {}
 
-  findClubs() {
-    return this.prisma.club.findMany({
-      include: {
-        ClubImage: {
-          include: {
-            Image: true,
-          },
-        },
-      },
-    });
+  findClubs(options?: Prisma.ClubFindManyArgs): Promise<Club[]> {
+    const query: Prisma.ClubFindManyArgs = {};
+
+    if (options?.include) {
+      query.include = options.include;
+    }
+    return this.prisma.club.findMany(query);
   }
+
   async findClubById(id: number) {
     return await this.prisma.club.findUnique({
       where: { id },
       include: {
+        UserJoinedClub: {
+          include: {
+            User: true,
+          },
+        },
+        UserLikedClub: {
+          include: {
+            User: true,
+          },
+        },
         ClubImage: {
           include: {
             Image: true,
@@ -52,7 +58,7 @@ export class ClubService {
         title: createClubDto.title,
         description: createClubDto.description,
         owner: createClubDto.owner,
-        max: +createClubDto.max,
+        max: +createClubDto.max || null,
       },
       include: {
         ClubImage: {
@@ -66,13 +72,7 @@ export class ClubService {
   async updateClub(id: number, updateClubDto: UpdateClubDto) {
     return await this.prisma.club.update({
       where: { id },
-      data: {
-        categoryId: +updateClubDto.categoryId,
-        title: updateClubDto.title,
-        description: updateClubDto.description,
-        owner: updateClubDto.owner,
-        max: +updateClubDto.max,
-      },
+      data: { ...updateClubDto },
       include: {
         ClubImage: {
           include: {
@@ -85,5 +85,25 @@ export class ClubService {
 
   async deleteClub(id: number): Promise<Club> {
     return await this.prisma.club.delete({ where: { id } });
+  }
+
+  async joinClub(clubId: number, userId: string) {
+    return await this.prisma.userJoinedClub.create({
+      data: { userId, clubId },
+      include: { User: true, Club: true },
+    });
+  }
+
+  async likeClub(clubId: number, userId: string) {
+    return await this.prisma.userLikedClub.create({
+      data: { userId, clubId },
+      include: { User: true, Club: true },
+    });
+  }
+  async deleteLikedClub(clubId: number, userId: string) {
+    return await this.prisma.userLikedClub.delete({
+      where: { userId_clubId: { clubId, userId } },
+      include: { User: true, Club: true },
+    });
   }
 }

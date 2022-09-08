@@ -1,6 +1,10 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import {
+  DocumentBuilder,
+  SwaggerCustomOptions,
+  SwaggerModule,
+} from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { PrismaService } from './common/prisma.service';
 import cookieParser from 'cookie-parser';
@@ -28,13 +32,24 @@ async function bootstrap() {
 }
 bootstrap();
 
+//웹 페이지를 새로고침을 해도 Token 값 유지
+const swaggerCustomOptions: SwaggerCustomOptions = {
+  swaggerOptions: {
+    persistAuthorization: true,
+  },
+};
+
 function setupSwagger(app: INestApplication) {
   const config = new DocumentBuilder()
     .setTitle('Moa-Moa API')
     .setDescription('description')
     .setVersion('1.0.0')
+    .addBearerAuth(
+      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', in: 'header' },
+      'accessToken',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api-docs', app, document);
+  SwaggerModule.setup('api-docs', app, document, swaggerCustomOptions);
 }

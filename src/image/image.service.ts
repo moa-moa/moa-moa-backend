@@ -14,23 +14,20 @@ export class ImageService {
   async uploadAvatarByUserId(userId: string, avatar: File): Promise<any> {
     if (avatar) {
       //이전 이미지 삭제
-      const userAvatar = await this.findAvatarByUserId(userId);
-      await this.cloudStorageService.removeFile(userAvatar.imageName);
+      await this.findAvatarByUserId(userId);
 
       //현 이미지 업로드
-      const file = await this.cloudStorageService.uploadFile(avatar, '');
-
       return this.prisma.image.upsert({
         where: { userId },
         create: {
-          imageUrl: file.publicUrl,
-          imageName: file.name,
+          originalName: avatar.originalname,
+          imageName: avatar.filename,
           type: 'USER',
           userId: userId,
         },
         update: {
-          imageUrl: file.publicUrl,
-          imageName: file.name,
+          originalName: avatar.originalname,
+          imageName: avatar.filename,
           type: 'USER',
           userId: userId,
         },
@@ -40,19 +37,11 @@ export class ImageService {
     }
   }
   async findAvatarByUserId(userId: string): Promise<Image> {
-    const image = await this.prisma.image.findUnique({ where: { userId } });
-
-    if (!image) {
-      throw new BadRequestException(
-        `Could not find image with userId ${userId}`,
-      );
-    }
-    return image;
+    return await this.prisma.image.findUnique({ where: { userId } });
   }
 
   async deleteAvatarByUserId(userId: string) {
-    const userAvatar = await this.findAvatarByUserId(userId);
-    await this.cloudStorageService.removeFile(userAvatar.imageName);
+    await this.findAvatarByUserId(userId);
     return this.prisma.image.delete({ where: { userId } });
   }
 
@@ -70,10 +59,6 @@ export class ImageService {
 
   async uploadImageOnClub(clubId: number, images: File[]) {
     //이전 이미지 삭제
-    const clubImages = await this.findImageByClubId(clubId);
-    for (const image of clubImages) {
-      this.cloudStorageService.removeFile(image.imageName);
-    }
     await this.prisma.image.deleteMany({
       where: { ClubImage: { some: { clubId } } },
     });
@@ -89,12 +74,10 @@ export class ImageService {
   async saveClubImage(clubId: number, images: File[]) {
     const imageIds: number[] = [];
     for (const image of images) {
-      const file = await this.cloudStorageService.uploadFile(image, '');
-
       const data = await this.prisma.image.create({
         data: {
-          imageUrl: file.publicUrl,
-          imageName: file.name,
+          originalName: image.originalname,
+          imageName: image.filename,
           type: 'CLUB',
           ClubImage: {
             create: {

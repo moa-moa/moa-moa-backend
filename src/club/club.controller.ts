@@ -36,6 +36,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
 import { Prisma, User } from '@prisma/client';
 import { UpdateClubDto } from './dto/update-club.dto';
+import { diskStorage } from 'multer';
 
 @ApiTags('Club')
 @ApiBearerAuth('accessToken')
@@ -123,7 +124,18 @@ export class ClubController {
     description: 'Club 모델 하나를 생성합니다.',
   })
   @ApiConsumes('multipart/form-data')
-  @UseInterceptors(FilesInterceptor('files', 10)) //업로드파일을 10개로 제한
+  @UseInterceptors(
+    FilesInterceptor('files', 10, {
+      storage: diskStorage({
+        destination: './images/club',
+        filename: (req, file, cb) => {
+          const fileNameSplit = file.originalname.split('.');
+          const fileExt = fileNameSplit[fileNameSplit.length - 1];
+          cb(null, `${Date.now()}.${fileExt}`);
+        },
+      }),
+    }),
+  ) //업로드파일을 10개로 제한
   @ApiCreatedResponse({ type: Club })
   @Post()
   async createClub(
@@ -163,7 +175,18 @@ export class ClubController {
     example: 1,
   })
   @ApiConsumes('multipart/form-data')
-  @UseInterceptors(FilesInterceptor('files', 10)) //업로드파일을 10개로 제한
+  @UseInterceptors(
+    FilesInterceptor('files', 10, {
+      storage: diskStorage({
+        destination: './images/club',
+        filename: (req, file, cb) => {
+          const fileNameSplit = file.originalname.split('.');
+          const fileExt = fileNameSplit[fileNameSplit.length - 1];
+          cb(null, `${Date.now()}.${fileExt}`);
+        },
+      }),
+    }),
+  ) //업로드파일을 10개로 제한
   @ApiOkResponse({ type: Club })
   @Patch(':id')
   async updateClub(

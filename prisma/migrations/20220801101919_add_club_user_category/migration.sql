@@ -43,7 +43,7 @@ CREATE TABLE `ClubImage` (
 -- CreateTable
 CREATE TABLE `Image` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `imageUrl` VARCHAR(191) NOT NULL,
+    `originalName` VARCHAR(191) NOT NULL,
     `imageName` VARCHAR(191) NOT NULL,
     `type` ENUM('USER', 'CLUB') NOT NULL DEFAULT 'USER',
 

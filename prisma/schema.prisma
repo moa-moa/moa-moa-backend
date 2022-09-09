@@ -65,7 +65,7 @@ model ClubImage {
 model Image {
   id        Int       @id @default(autoincrement())
   type      ImageType @default(USER)
-  imageUrl  String
+  originalName  String
   imageName String
 
   ClubImage ClubImage[]

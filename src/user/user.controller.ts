@@ -24,6 +24,12 @@ import { ImageService } from '../image/image.service';
 import { User } from './model/user.model';
 import { UserService } from './user.service';
 
+const whitelist = [
+  'image/png',
+  'image/jpeg',
+  'image/jpg',
+  'image/webp'
+]
 @ApiTags('User')
 @UseGuards(AuthGuard('jwt'))
 @ApiBearerAuth('accessToken')
@@ -61,9 +67,18 @@ export class UserController {
           cb(null, `${Date.now()}.${fileExt}`);
         },
       }),
+      
+      fileFilter: (req, file, cb) => {
+        if (!whitelist.includes(file.mimetype)) {
+           return cb(new Error('Only .png, .jpg and .jpeg format allowed'), false, ); // FileIntercepter is completely ignoring this.
+        }
+    
+        cb(null, true)
+      }
     }),
   )
   async upload(@Req() req: Request, @UploadedFile() file: File) {
+    
     const user = req.user as User;
     const id = user.id;
 

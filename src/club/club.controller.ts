@@ -2,11 +2,15 @@ import {
   Body,
   Controller,
   Delete,
+  FileTypeValidator,
   Get,
   HttpException,
   HttpStatus,
+  MaxFileSizeValidator,
   NotFoundException,
   Param,
+  ParseFilePipe,
+  ParseFilePipeBuilder,
   Patch,
   Post,
   Query,
@@ -38,6 +42,12 @@ import { Prisma, User } from '@prisma/client';
 import { UpdateClubDto } from './dto/update-club.dto';
 import { diskStorage } from 'multer';
 
+const whitelist = [
+  'image/png',
+  'image/jpeg',
+  'image/jpg',
+  'image/webp'
+]
 @ApiTags('Club')
 @ApiBearerAuth('accessToken')
 @UseGuards(AuthGuard('jwt'))
@@ -134,13 +144,22 @@ export class ClubController {
           cb(null, `${Date.now()}.${fileExt}`);
         },
       }),
+      fileFilter: (req, file, cb) => {
+        console.log("file.mimetype",file.mimetype)
+        if (!whitelist.includes(file.mimetype)) {
+           return cb(null, false, ); // FileIntercepter is completely ignoring this.
+        }
+    
+        cb(null, true)
+      }
+      
     }),
   ) //업로드파일을 10개로 제한
   @ApiCreatedResponse({ type: Club })
   @Post()
   async createClub(
     @Req() req: Request,
-    @UploadedFiles() files: File[],
+    @UploadedFiles( ) files: File[],
     @Body() createClubDto: CreateClubDto,
   ) {
     try {
@@ -185,6 +204,15 @@ export class ClubController {
           cb(null, `${Date.now()}.${fileExt}`);
         },
       }),
+      
+      fileFilter: (req, file, cb) => {
+        console.log("file.mimetype",file.mimetype)
+        if (!whitelist.includes(file.mimetype)) {
+           return cb(new Error('Only .png, .jpg and .jpeg format allowed'), false, ); // FileIntercepter is completely ignoring this.
+        }
+    
+        cb(null, true)
+      }
     }),
   ) //업로드파일을 10개로 제한
   @ApiOkResponse({ type: Club })
@@ -197,6 +225,7 @@ export class ClubController {
     try {
       const user = req.user as User;
       const id = +req.params.id;
+
 
       const club = await this.clubService.findClubById(id);
       if (!club)

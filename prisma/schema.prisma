@@ -54,19 +54,18 @@ model Club {
 }
 
 model ClubImage {
-  Image   Image @relation(fields: [imageId], references: [id], onDelete: Cascade)
-  imageId Int
-  Club    Club  @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  Image   Image  @relation(fields: [imageId], references: [id], onDelete: Cascade)
+  imageId String
+  Club    Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
   clubId  Int
 
   @@id([imageId, clubId])
 }
 
 model Image {
-  id        Int       @id @default(autoincrement())
-  type      ImageType @default(USER)
-  originalName  String
-  imageName String
+  id           String    @id @unique
+  type         ImageType @default(USER)
+  originalName String
 
   ClubImage ClubImage[]
   User      User?       @relation(fields: [userId], references: [id], onDelete: Cascade)

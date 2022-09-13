@@ -1,5 +1,6 @@
 import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import passport from 'passport';
 import { CreateUserDto } from '../user/dto/create-user.dto';
@@ -7,6 +8,7 @@ import { UserService } from '../user/user.service';
 import { AuthService } from './auth.service';
 import { JwtPayload } from './jwtPayload.type';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(

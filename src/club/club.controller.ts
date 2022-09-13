@@ -2,28 +2,20 @@ import {
   Body,
   Controller,
   Delete,
-  FileTypeValidator,
   Get,
   HttpException,
   HttpStatus,
-  MaxFileSizeValidator,
   NotFoundException,
   Param,
-  ParseFilePipe,
-  ParseFilePipeBuilder,
   Patch,
   Post,
   Query,
   Req,
-  UploadedFiles,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
-import { FilesInterceptor } from '@nestjs/platform-express';
 import {
   ApiBearerAuth,
   ApiBody,
-  ApiConsumes,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
@@ -31,7 +23,6 @@ import {
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
-import { File } from '../common/file.interface';
 import { ImageService } from '../image/image.service';
 import { ClubService } from './club.service';
 import { CreateClubDto } from './dto/create-club.dto';
@@ -40,14 +31,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
 import { Prisma, User } from '@prisma/client';
 import { UpdateClubDto } from './dto/update-club.dto';
-import { diskStorage } from 'multer';
 
-const whitelist = [
-  'image/png',
-  'image/jpeg',
-  'image/jpg',
-  'image/webp'
-]
 @ApiTags('Club')
 @ApiBearerAuth('accessToken')
 @UseGuards(AuthGuard('jwt'))
@@ -100,77 +84,18 @@ export class ClubController {
     return this.clubService.findClubById(id);
   }
 
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        categoryId: {
-          type: 'number',
-          nullable: false,
-        },
-        title: {
-          type: 'string',
-        },
-        description: {
-          type: 'string',
-        },
-        max: {
-          type: 'number',
-          nullable: true,
-        },
-        files: {
-          type: 'array',
-          nullable: true,
-          items: {
-            type: 'string',
-            format: 'binary',
-          },
-        },
-      },
-    },
-  })
   @ApiOperation({
     summary: '클럽 1개 생성',
     description: 'Club 모델 하나를 생성합니다.',
   })
-  @ApiConsumes('multipart/form-data')
-  @UseInterceptors(
-    FilesInterceptor('files', 10, {
-      storage: diskStorage({
-        destination: './images/club',
-        filename: (req, file, cb) => {
-          const fileNameSplit = file.originalname.split('.');
-          const fileExt = fileNameSplit[fileNameSplit.length - 1];
-          cb(null, `${Date.now()}.${fileExt}`);
-        },
-      }),
-      fileFilter: (req, file, cb) => {
-        console.log("file.mimetype",file.mimetype)
-        if (!whitelist.includes(file.mimetype)) {
-           return cb(null, false, ); // FileIntercepter is completely ignoring this.
-        }
-    
-        cb(null, true)
-      }
-      
-    }),
-  ) //업로드파일을 10개로 제한
   @ApiCreatedResponse({ type: Club })
   @Post()
-  async createClub(
-    @Req() req: Request,
-    @UploadedFiles( ) files: File[],
-    @Body() createClubDto: CreateClubDto,
-  ) {
+  async createClub(@Req() req: Request, @Body() createClubDto: CreateClubDto) {
     try {
       const user = req.user as User;
       createClubDto.owner = user.id;
 
       const createdClub = await this.clubService.createClub(createClubDto);
-
-      if (files !== undefined && files.length > 0) {
-        await this.imageService.uploadImageOnClub(createdClub.id, files);
-      }
 
       await this.clubService.joinClub(createdClub.id, user.id);
       return await this.findClubById(createdClub.id);
@@ -193,39 +118,12 @@ export class ClubController {
     description: 'Club 모델의 Id값입니다.',
     example: 1,
   })
-  @ApiConsumes('multipart/form-data')
-  @UseInterceptors(
-    FilesInterceptor('files', 10, {
-      storage: diskStorage({
-        destination: './images/club',
-        filename: (req, file, cb) => {
-          const fileNameSplit = file.originalname.split('.');
-          const fileExt = fileNameSplit[fileNameSplit.length - 1];
-          cb(null, `${Date.now()}.${fileExt}`);
-        },
-      }),
-      
-      fileFilter: (req, file, cb) => {
-        console.log("file.mimetype",file.mimetype)
-        if (!whitelist.includes(file.mimetype)) {
-           return cb(new Error('Only .png, .jpg and .jpeg format allowed'), false, ); // FileIntercepter is completely ignoring this.
-        }
-    
-        cb(null, true)
-      }
-    }),
-  ) //업로드파일을 10개로 제한
   @ApiOkResponse({ type: Club })
   @Patch(':id')
-  async updateClub(
-    @Req() req: Request,
-    @UploadedFiles() files: File[],
-    @Body() updateClubDto: UpdateClubDto,
-  ) {
+  async updateClub(@Req() req: Request, @Body() updateClubDto: UpdateClubDto) {
     try {
       const user = req.user as User;
       const id = +req.params.id;
-
 
       const club = await this.clubService.findClubById(id);
       if (!club)
@@ -236,10 +134,9 @@ export class ClubController {
 
       if (club.owner !== user.id)
         throw new HttpException('You are not Club owner', HttpStatus.FORBIDDEN);
+      else updateClubDto.owner = club.owner;
+      await this.imageService.updateImages(id, updateClubDto.imageIds);
 
-      if (files !== undefined && files.length > 0) {
-        await this.imageService.uploadImageOnClub(id, files);
-      }
       return this.clubService.updateClub(id, updateClubDto);
     } catch (e) {
       // e instanceof Error 로는 catch 안됨

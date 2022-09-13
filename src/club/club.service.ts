@@ -49,16 +49,23 @@ export class ClubService {
       throw new BadRequestException('invalid club title');
     }
 
+    const createMany: Prisma.ClubImageCreateManyClubInputEnvelope = {
+      data: createClubDto.imageIds.map((imageId) => {
+        return { imageId };
+      }),
+      skipDuplicates: true,
+    };
+
     //존재하는 categoryId인지 확인
-    await this.categoryService.findCategoryById(+createClubDto.categoryId);
+    await this.categoryService.findCategoryById(createClubDto.categoryId);
+    delete createClubDto.imageIds;
 
     return await this.prisma.club.create({
       data: {
-        categoryId: +createClubDto.categoryId,
-        title: createClubDto.title,
-        description: createClubDto.description,
-        owner: createClubDto.owner,
-        max: +createClubDto.max || null,
+        ...createClubDto,
+        ClubImage: {
+          createMany,
+        },
       },
       include: {
         ClubImage: {
@@ -70,6 +77,8 @@ export class ClubService {
     });
   }
   async updateClub(id: number, updateClubDto: UpdateClubDto) {
+    delete updateClubDto.imageIds;
+
     return await this.prisma.club.update({
       where: { id },
       data: { ...updateClubDto },

@@ -62,6 +62,7 @@ export class ImageController {
       fileFilter: (req, file, cb) => {
         if (!whitelist.includes(file.mimetype)) {
           return cb(null, false); // FileIntercepter is completely ignoring this.
+          // return cb(new Error('This extension is not allowed'), false);
         }
         cb(null, true);
       },

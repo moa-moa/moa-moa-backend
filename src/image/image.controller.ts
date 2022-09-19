@@ -22,7 +22,6 @@ import { File } from 'src/common/file.interface';
 import { ImageService } from './image.service';
 import { v4 } from 'uuid';
 
-
 const whitelist = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
 
 @ApiTags('Image')
@@ -58,7 +57,7 @@ export class ImageController {
         destination: './images/club',
         filename: (req, file, cb) => {
           const fileName = parse(file.originalname);
-          cb(null, `${v4()}${fileName.ext}` );
+          cb(null, `${v4()}${fileName.ext}`);
         },
       }),
       fileFilter: (req, file, cb) => {

@@ -2,7 +2,6 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { File } from '../common/file.interface';
 import { PrismaService } from '../common/prisma.service';
 import { Image, Prisma } from '@prisma/client';
-import { parse } from 'path';
 
 @Injectable()
 export class ImageService {
@@ -112,7 +111,7 @@ export class ImageService {
     const promise: string[] = await this.promiseCreateImages(images, clubId);
     const result = await Promise.allSettled(promise);
     const imagesInfo = result.map((v) => {
-      if(v.status === 'fulfilled') return v.value
+      if (v.status === 'fulfilled') return v.value;
     });
     return imagesInfo;
   }
@@ -136,7 +135,7 @@ export class ImageService {
         };
       }
       const data = await this.prisma.image.create({ data: query });
-      imagesInfo.push({id : data.id, path: data.path});
+      imagesInfo.push({ id: data.id, path: data.path });
     }
     return imagesInfo;
   }

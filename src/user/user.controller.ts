@@ -60,7 +60,7 @@ export class UserController {
         destination: './images/avatar',
         filename: (req, file, cb) => {
           const fileName = parse(file.originalname);
-          cb(null, `${v4()}${fileName.ext}` );
+          cb(null, `${v4()}${fileName.ext}`);
         },
       }),
       fileFilter: (req, file, cb) => {

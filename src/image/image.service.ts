@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { File } from '../common/file.interface';
 import { PrismaService } from '../common/prisma.service';
 import { Image, Prisma } from '@prisma/client';
+import { parse } from 'path';
 
 @Injectable()
 export class ImageService {
@@ -15,14 +16,14 @@ export class ImageService {
       return this.prisma.image.upsert({
         where: { userId },
         create: {
-          originalName: avatar.originalname,
-          id: avatar.filename,
+          id: avatar.filename.split('.')[0],
+          path: avatar.path,
           type: 'USER',
           userId: userId,
         },
         update: {
-          originalName: avatar.originalname,
-          id: avatar.filename,
+          id: avatar.filename.split('.')[0],
+          path: avatar.path,
           type: 'USER',
           userId: userId,
         },
@@ -110,17 +111,18 @@ export class ImageService {
   async createImages(images: File[], clubId?: number) {
     const promise: string[] = await this.promiseCreateImages(images, clubId);
     const result = await Promise.allSettled(promise);
-    const imageIds = result.filter((f) => f.status === 'fulfilled');
-
-    return imageIds;
+    const imagesInfo = result.map((v) => {
+      if(v.status === 'fulfilled') return v.value
+    });
+    return imagesInfo;
   }
   async promiseCreateImages(images: File[], clubId?: number) {
-    const imageIds: string[] = [];
+    const imagesInfo = [];
     for (const image of images) {
       let query: Prisma.ImageCreateInput;
       query = {
-        id: image.filename,
-        originalName: image.originalname,
+        id: image.filename.split('.')[0],
+        path: image.path,
         type: 'CLUB',
       };
       if (clubId) {
@@ -134,9 +136,9 @@ export class ImageService {
         };
       }
       const data = await this.prisma.image.create({ data: query });
-      imageIds.push(data.id);
+      imagesInfo.push({id : data.id, path: data.path});
     }
-    return imageIds;
+    return imagesInfo;
   }
 
   async deleteImage(imageId: string) {

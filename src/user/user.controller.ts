@@ -19,6 +19,8 @@ import {
 } from '@nestjs/swagger';
 import { Request } from 'express';
 import { diskStorage } from 'multer';
+import { parse } from 'path';
+import { v4 } from 'uuid';
 import { File } from '../common/file.interface';
 import { ImageService } from '../image/image.service';
 import { User } from './model/user.model';
@@ -57,9 +59,8 @@ export class UserController {
       storage: diskStorage({
         destination: './images/avatar',
         filename: (req, file, cb) => {
-          const fileNameSplit = file.originalname.split('.');
-          const fileExt = fileNameSplit[fileNameSplit.length - 1];
-          cb(null, `${Date.now()}.${fileExt}`);
+          const fileName = parse(file.originalname);
+          cb(null, `${v4()}${fileName.ext}` );
         },
       }),
       fileFilter: (req, file, cb) => {

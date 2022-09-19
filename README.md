@@ -41,9 +41,10 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
-## 🚩 API DOCS
+## 🚩 API DOCS (swagger)
 
-localhost : http://localhost:3000/api-docs/
+localhost : http://localhost:3000/api-docs/ </br>
+GCP 배포예정
 
 ---
 

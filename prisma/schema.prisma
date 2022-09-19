@@ -63,9 +63,9 @@ model ClubImage {
 }
 
 model Image {
-  id           String    @id @unique
-  type         ImageType @default(USER)
-  originalName String
+  id   String    @id @unique
+  type ImageType @default(USER)
+  path String
 
   ClubImage ClubImage[]
   User      User?       @relation(fields: [userId], references: [id], onDelete: Cascade)

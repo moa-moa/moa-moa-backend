@@ -121,7 +121,7 @@ export class ImageService {
       let query: Prisma.ImageCreateInput;
       query = {
         id: image.filename.split('.')[0],
-        path: image.path,
+        path: image.path.replace(/^public/, ''),
         type: 'CLUB',
       };
       if (clubId) {

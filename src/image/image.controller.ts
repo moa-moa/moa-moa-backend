@@ -54,7 +54,7 @@ export class ImageController {
   @UseInterceptors(
     FilesInterceptor('files', 10, {
       storage: diskStorage({
-        destination: './images/club',
+        destination: './public/images/club',
         filename: (req, file, cb) => {
           const fileName = parse(file.originalname);
           cb(null, `${v4()}${fileName.ext}`);

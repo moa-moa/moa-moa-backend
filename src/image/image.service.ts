@@ -121,9 +121,15 @@ export class ImageService {
       let query: Prisma.ImageCreateInput;
       query = {
         id: image.filename.split('.')[0],
-        path: image.path.replace(/^public/, ''),
+        path: image.path.replace(/^public|\\+/g, (s) => {
+          if (s === 'public')  //public 제거
+            return '';
+          // 윈도우환경에서 찍히는 \\문자열을 /로 변경
+          else return '/';
+        }),
         type: 'CLUB',
       };
+
       if (clubId) {
         query = {
           ...query,

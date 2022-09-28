@@ -17,7 +17,7 @@ import { join } from 'path';
     ClubModule,
     ImageModule,
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'public'),
+      rootPath: join(__dirname, '..', '..', 'public'),
     }),
   ],
   controllers: [AppController],

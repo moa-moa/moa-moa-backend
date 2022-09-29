@@ -58,7 +58,7 @@ describe('CategoryService', () => {
   });
 
   describe('deleteCategory', () => {
-    it('should be create a dcategory with valid data', async () => {
+    it('should be delete a dcategory with valid data', async () => {
       const deleteUser = await service.deleteCategory(testCategory.id);
 
       expect(deleteUser.name).toEqual(testCategory.name);

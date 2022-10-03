@@ -1,36 +1,28 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { File } from '../common/file.interface';
-import { CloudStorageService } from '../common/cloud-storage.service';
 import { PrismaService } from '../common/prisma.service';
-import { Image } from '@prisma/client';
+import { Image, Prisma } from '@prisma/client';
 
 @Injectable()
 export class ImageService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private cloudStorageService: CloudStorageService,
-  ) {}
-
+  constructor(private readonly prisma: PrismaService) {}
   async uploadAvatarByUserId(userId: string, avatar: File): Promise<any> {
     if (avatar) {
       //이전 이미지 삭제
-      const userAvatar = await this.findAvatarByUserId(userId);
-      await this.cloudStorageService.removeFile(userAvatar.imageName);
+      await this.findAvatarByUserId(userId);
 
       //현 이미지 업로드
-      const file = await this.cloudStorageService.uploadFile(avatar, '');
-
       return this.prisma.image.upsert({
         where: { userId },
         create: {
-          imageUrl: file.publicUrl,
-          imageName: file.name,
+          id: avatar.filename.split('.')[0],
+          path: avatar.path,
           type: 'USER',
           userId: userId,
         },
         update: {
-          imageUrl: file.publicUrl,
-          imageName: file.name,
+          id: avatar.filename.split('.')[0],
+          path: avatar.path,
           type: 'USER',
           userId: userId,
         },
@@ -40,23 +32,15 @@ export class ImageService {
     }
   }
   async findAvatarByUserId(userId: string): Promise<Image> {
-    const image = await this.prisma.image.findUnique({ where: { userId } });
-
-    if (!image) {
-      throw new BadRequestException(
-        `Could not find image with userId ${userId}`,
-      );
-    }
-    return image;
+    return await this.prisma.image.findUnique({ where: { userId } });
   }
 
   async deleteAvatarByUserId(userId: string) {
-    const userAvatar = await this.findAvatarByUserId(userId);
-    await this.cloudStorageService.removeFile(userAvatar.imageName);
+    await this.findAvatarByUserId(userId);
     return this.prisma.image.delete({ where: { userId } });
   }
 
-  async findImageByClubId(clubId: number) {
+  async findImagesByClubId(clubId: number) {
     const image = await this.prisma.image.findMany({
       where: { ClubImage: { some: { clubId } } },
     });
@@ -68,47 +52,7 @@ export class ImageService {
     return image;
   }
 
-  async uploadImageOnClub(clubId: number, images: File[]) {
-    //이전 이미지 삭제
-    const clubImages = await this.findImageByClubId(clubId);
-    for (const image of clubImages) {
-      this.cloudStorageService.removeFile(image.imageName);
-    }
-    await this.prisma.image.deleteMany({
-      where: { ClubImage: { some: { clubId } } },
-    });
-
-    //현 이미지 업로드
-    const promise: number[] = await this.saveClubImage(clubId, images);
-    const result = await Promise.allSettled(promise);
-    const imageIds = result.filter((f) => f.status === 'fulfilled');
-
-    return imageIds;
-  }
-
-  async saveClubImage(clubId: number, images: File[]) {
-    const imageIds: number[] = [];
-    for (const image of images) {
-      const file = await this.cloudStorageService.uploadFile(image, '');
-
-      const data = await this.prisma.image.create({
-        data: {
-          imageUrl: file.publicUrl,
-          imageName: file.name,
-          type: 'CLUB',
-          ClubImage: {
-            create: {
-              clubId,
-            },
-          },
-        },
-      });
-      imageIds.push(data.id);
-    }
-    return imageIds;
-  }
-
-  async findImageByIds(ids: number[]) {
+  async findImageByIds(ids: string[]) {
     const image = await this.prisma.image.findMany({
       where: { id: { in: ids } },
     });
@@ -116,5 +60,96 @@ export class ImageService {
       throw new BadRequestException('invalid image ids');
     }
     return image;
+  }
+
+  async updateImages(clubId: number, afterImageIds: string[]) {
+    const beforeImageIds: string[] = [];
+    const images = await this.findImagesByClubId(clubId);
+    for (const image of images) {
+      beforeImageIds.push(image.id);
+    }
+
+    //삭제하기
+    for (const beforeImageId of beforeImageIds) {
+      if (!afterImageIds.includes(beforeImageId)) {
+        //새로운 배열에 이전 id가 없는 것 -> 삭제
+        this.deleteImage(beforeImageId);
+      }
+    }
+
+    const newImage = [];
+    for (const afterImageId of afterImageIds) {
+      if (!beforeImageIds.includes(afterImageId)) {
+        newImage.push(afterImageId); //이전 이미지와 다른 것 => 새로 생성된 것 => 연결
+      }
+    }
+
+    const promise = await this.promiseConnectImages(clubId, newImage);
+    const result = await Promise.allSettled(promise);
+    const imageIds = result.filter((f) => f.status === 'fulfilled');
+
+    return imageIds;
+  }
+
+  async promiseConnectImages(clubId: number, newImageIds: string[]) {
+    for (const imageId of newImageIds) {
+      await this.prisma.clubImage.upsert({
+        where: {
+          imageId_clubId: {
+            clubId,
+            imageId,
+          },
+        },
+        create: { clubId, imageId },
+        update: {},
+      });
+    }
+    return newImageIds;
+  }
+
+  async createImages(images: File[], clubId?: number) {
+    const promise: string[] = await this.promiseCreateImages(images, clubId);
+    const result = await Promise.allSettled(promise);
+    const imagesInfo = result.map((v) => {
+      if (v.status === 'fulfilled') return v.value;
+    });
+    return imagesInfo;
+  }
+  async promiseCreateImages(images: File[], clubId?: number) {
+    const imagesInfo = [];
+    for (const image of images) {
+      let query: Prisma.ImageCreateInput;
+      query = {
+        id: image.filename.split('.')[0],
+        path: image.path.replace(/^public|\\+/g, (s) => {
+          if (s === 'public')
+            //public 제거
+            return '';
+          // 윈도우환경에서 찍히는 \\문자열을 /로 변경
+          else return '/';
+        }),
+        type: 'CLUB',
+      };
+
+      if (clubId) {
+        query = {
+          ...query,
+          ClubImage: {
+            create: {
+              clubId,
+            },
+          },
+        };
+      }
+      const data = await this.prisma.image.create({ data: query });
+      imagesInfo.push({ id: data.id, path: data.path });
+    }
+    return imagesInfo;
+  }
+
+  async deleteImage(imageId: string) {
+    return await this.prisma.image.delete({
+      where: { id: imageId },
+    });
   }
 }

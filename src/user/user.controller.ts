@@ -18,11 +18,15 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Request } from 'express';
+import { diskStorage } from 'multer';
+import { parse } from 'path';
+import { v4 } from 'uuid';
 import { File } from '../common/file.interface';
 import { ImageService } from '../image/image.service';
 import { User } from './model/user.model';
 import { UserService } from './user.service';
 
+const whitelist = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
 @ApiTags('User')
 @UseGuards(AuthGuard('jwt'))
 @ApiBearerAuth('accessToken')
@@ -50,7 +54,23 @@ export class UserController {
   })
   @ApiConsumes('multipart/form-data')
   @Post('avatar/upload')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './public/images/avatar',
+        filename: (req, file, cb) => {
+          const fileName = parse(file.originalname);
+          cb(null, `${v4()}${fileName.ext}`);
+        },
+      }),
+      fileFilter: (req, file, cb) => {
+        if (!whitelist.includes(file.mimetype)) {
+          return cb(null, false); // FileIntercepter is completely ignoring this.
+        }
+        cb(null, true);
+      },
+    }),
+  )
   async upload(@Req() req: Request, @UploadedFile() file: File) {
     const user = req.user as User;
     const id = user.id;

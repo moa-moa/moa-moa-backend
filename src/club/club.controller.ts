@@ -11,15 +11,11 @@ import {
   Post,
   Query,
   Req,
-  UploadedFiles,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
-import { FilesInterceptor } from '@nestjs/platform-express';
 import {
   ApiBearerAuth,
   ApiBody,
-  ApiConsumes,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
@@ -27,7 +23,6 @@ import {
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
-import { File } from '../common/file.interface';
 import { ImageService } from '../image/image.service';
 import { ClubService } from './club.service';
 import { CreateClubDto } from './dto/create-club.dto';
@@ -89,57 +84,18 @@ export class ClubController {
     return this.clubService.findClubById(id);
   }
 
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        categoryId: {
-          type: 'number',
-          nullable: false,
-        },
-        title: {
-          type: 'string',
-        },
-        description: {
-          type: 'string',
-        },
-        max: {
-          type: 'number',
-          nullable: true,
-        },
-        files: {
-          type: 'array',
-          nullable: true,
-          items: {
-            type: 'string',
-            format: 'binary',
-          },
-        },
-      },
-    },
-  })
   @ApiOperation({
     summary: '클럽 1개 생성',
     description: 'Club 모델 하나를 생성합니다.',
   })
-  @ApiConsumes('multipart/form-data')
-  @UseInterceptors(FilesInterceptor('files', 10)) //업로드파일을 10개로 제한
   @ApiCreatedResponse({ type: Club })
   @Post()
-  async createClub(
-    @Req() req: Request,
-    @UploadedFiles() files: File[],
-    @Body() createClubDto: CreateClubDto,
-  ) {
+  async createClub(@Req() req: Request, @Body() createClubDto: CreateClubDto) {
     try {
       const user = req.user as User;
       createClubDto.owner = user.id;
 
       const createdClub = await this.clubService.createClub(createClubDto);
-
-      if (files !== undefined && files.length > 0) {
-        await this.imageService.uploadImageOnClub(createdClub.id, files);
-      }
 
       await this.clubService.joinClub(createdClub.id, user.id);
       return await this.findClubById(createdClub.id);
@@ -162,15 +118,9 @@ export class ClubController {
     description: 'Club 모델의 Id값입니다.',
     example: 1,
   })
-  @ApiConsumes('multipart/form-data')
-  @UseInterceptors(FilesInterceptor('files', 10)) //업로드파일을 10개로 제한
   @ApiOkResponse({ type: Club })
   @Patch(':id')
-  async updateClub(
-    @Req() req: Request,
-    @UploadedFiles() files: File[],
-    @Body() updateClubDto: UpdateClubDto,
-  ) {
+  async updateClub(@Req() req: Request, @Body() updateClubDto: UpdateClubDto) {
     try {
       const user = req.user as User;
       const id = +req.params.id;
@@ -184,10 +134,9 @@ export class ClubController {
 
       if (club.owner !== user.id)
         throw new HttpException('You are not Club owner', HttpStatus.FORBIDDEN);
+      else updateClubDto.owner = club.owner;
+      await this.imageService.updateImages(id, updateClubDto.imageIds);
 
-      if (files !== undefined && files.length > 0) {
-        await this.imageService.uploadImageOnClub(id, files);
-      }
       return this.clubService.updateClub(id, updateClubDto);
     } catch (e) {
       // e instanceof Error 로는 catch 안됨

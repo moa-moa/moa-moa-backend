@@ -1,7 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
-import { File } from 'src/common/file.interface';
 
 export class CreateClubDto {
   @IsNumber()
@@ -29,6 +28,6 @@ export class CreateClubDto {
   max?: number;
 
   @IsOptional()
-  @ApiPropertyOptional({ type: [String], required: false, format: 'binary' })
-  files?: File[];
+  @ApiPropertyOptional({ type: [String], required: false })
+  imageIds?: string[];
 }

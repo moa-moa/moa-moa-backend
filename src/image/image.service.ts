@@ -16,13 +16,13 @@ export class ImageService {
         where: { userId },
         create: {
           id: avatar.filename.split('.')[0],
-          path: avatar.path,
+          imagePath: avatar.path,
           type: 'USER',
           userId: userId,
         },
         update: {
           id: avatar.filename.split('.')[0],
-          path: avatar.path,
+          imagePath: avatar.path,
           type: 'USER',
           userId: userId,
         },
@@ -121,7 +121,7 @@ export class ImageService {
       let query: Prisma.ImageCreateInput;
       query = {
         id: image.filename.split('.')[0],
-        path: image.path.replace(/^public|\\+/g, (s) => {
+        imagePath: image.path.replace(/^public|\\+/g, (s) => {
           if (s === 'public')
             //public 제거
             return '';
@@ -142,7 +142,7 @@ export class ImageService {
         };
       }
       const data = await this.prisma.image.create({ data: query });
-      imagesInfo.push({ id: data.id, path: data.path });
+      imagesInfo.push({ id: data.id, imagePath: data.imagePath });
     }
     return imagesInfo;
   }

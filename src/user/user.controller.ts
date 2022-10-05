@@ -1,7 +1,9 @@
 import {
   Controller,
   Delete,
+  Get,
   Post,
+  Query,
   Req,
   UploadedFile,
   UseGuards,
@@ -15,6 +17,7 @@ import {
   ApiConsumes,
   ApiOkResponse,
   ApiOperation,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 import { Request } from 'express';
@@ -92,5 +95,63 @@ export class UserController {
 
     await this.imageService.deleteAvatarByUserId(id);
     return await this.userService.findUserById(id);
+  }
+
+  @ApiOperation({
+    summary: '내 정보 보기',
+    description: '내 정보를 볼 수 있습니다',
+  })
+  @ApiQuery({
+    name: 'club',
+    description: '관련된 클럽 정보를 함께 가져올지 결정합니다.',
+    type: Boolean,
+    required: false,
+  })
+  @ApiOkResponse({ type: User })
+  @Get()
+  async getMyInfo(@Req() req: Request, @Query('club') getClub?: boolean) {
+    const user = req.user as User;
+    const id = user.id;
+
+    return await this.userService.findUserById(id, getClub);
+  }
+
+  @ApiOperation({
+    summary: '내가 만든 클럽',
+    description: '내가 만든 클럽들을 볼 수 있습니다.',
+  })
+  @ApiOkResponse({ type: User })
+  @Get('created')
+  async myCreatedClub(@Req() req: Request) {
+    const user = req.user as User;
+    const id = user.id;
+
+    return await this.userService.myCreatedClub(id);
+  }
+
+  @ApiOperation({
+    summary: '내가 찜한 클럽',
+    description: '내가 찜한 클럽들을 볼 수 있습니다.',
+  })
+  @ApiOkResponse({ type: User })
+  @Get('liked')
+  async myLikedClub(@Req() req: Request) {
+    const user = req.user as User;
+    const id = user.id;
+
+    return await this.userService.myLikedClub(id);
+  }
+
+  @ApiOperation({
+    summary: '내가 참여한 클럽',
+    description: '내가 참여한 클럽들을 볼 수 있습니다.',
+  })
+  @ApiOkResponse({ type: User })
+  @Get('joined')
+  async myJoinedClub(@Req() req: Request) {
+    const user = req.user as User;
+    const id = user.id;
+
+    return await this.userService.myJoinedClub(id);
   }
 }

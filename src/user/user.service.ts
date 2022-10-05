@@ -1,5 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { User } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 import * as argon from 'argon2';
 import { PrismaService } from '../common/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -12,8 +12,21 @@ export class UserService {
     return this.prisma.user.findMany();
   }
 
-  findUserById(id: string): Promise<User> {
-    return this.prisma.user.findUnique({ where: { id } });
+  findUserById(id: string, options?: boolean): Promise<User> {
+    const query: Prisma.UserFindUniqueArgs = {
+      where: {
+        id,
+      },
+    };
+    if (options) {
+      query.include = {
+        UserJoinedClub: true,
+        UserLikedClub: true,
+        Club: true,
+      };
+    }
+
+    return this.prisma.user.findUnique(query);
   }
 
   async findByIdOrSaveOrTokenUpdate(data: CreateUserDto) {
@@ -75,6 +88,30 @@ export class UserService {
       },
       data: {
         hashedRt: null,
+      },
+    });
+  }
+
+  async myCreatedClub(userId: string) {
+    return await this.prisma.club.findMany({
+      where: {
+        owner: userId,
+      },
+    });
+  }
+
+  async myLikedClub(userId: string) {
+    return await this.prisma.userLikedClub.findMany({
+      where: {
+        userId,
+      },
+    });
+  }
+
+  async myJoinedClub(userId: string) {
+    return await this.prisma.userJoinedClub.findMany({
+      where: {
+        userId,
       },
     });
   }

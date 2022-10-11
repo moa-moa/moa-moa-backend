@@ -46,7 +46,7 @@ export class AuthController {
 
     res.cookie('refreshToken', tokens.refreshToken, {
       httpOnly: true,
-      secure: true,
+      secure: false,
     });
     // return res.status(200).json(tokens);
     return res.status(200).redirect('http://localhost:3001/'); // webfront home
@@ -76,7 +76,7 @@ export class AuthController {
 
     res.cookie('refreshToken', tokens.refreshToken, {
       httpOnly: true,
-      secure: true,
+      secure: false,
     });
     return res.status(200).json({ accessToken: tokens.accessToken });
   }

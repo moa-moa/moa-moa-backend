@@ -11,11 +11,11 @@ import {
   Post,
   Query,
   Req,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
-  ApiBody,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
@@ -28,7 +28,7 @@ import { ClubService } from './club.service';
 import { CreateClubDto } from './dto/create-club.dto';
 import { Club } from './model/club.model';
 import { AuthGuard } from '@nestjs/passport';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import { Prisma, User } from '@prisma/client';
 import { UpdateClubDto } from './dto/update-club.dto';
 
@@ -181,21 +181,17 @@ export class ClubController {
     summary: '참여하기',
     description: '해당 Club에 참여합니다.',
   })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        clubId: {
-          type: 'number',
-          nullable: false,
-        },
-      },
-    },
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    required: true,
+    description: 'Club 모델의 Id값입니다.',
+    example: 1,
   })
-  @Post('/join')
+  @Post('/join/:id')
   async joinClub(@Req() req: Request) {
     const user = req.user as User;
-    const clubId = +req.body.clubId;
+    const clubId = +req.params.id;
 
     const club = await this.clubService.findClubById(clubId);
     if (!club)
@@ -225,22 +221,19 @@ export class ClubController {
     summary: '찜하기',
     description: '해당 Club을 찜합니다.',
   })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        clubId: {
-          type: 'number',
-          nullable: false,
-        },
-      },
-    },
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    required: true,
+    description: 'Club 모델의 Id값입니다.',
+    example: 1,
   })
-  @Post('/like')
-  async likeClub(@Req() req: Request) {
+  @Post('/like/:id')
+  async likeClub(@Req() req: Request, @Res() res: Response) {
     const user = req.user as User;
-    const clubId = +req.body.clubId;
+    const clubId = +req.params.id;
 
+    console.log('clubid!!!: ', clubId);
     const club = await this.clubService.findClubById(clubId);
     if (!club)
       throw new HttpException(
@@ -251,10 +244,51 @@ export class ClubController {
     const isUserLiked = club.UserLikedClub.some((v) => v.userId === user.id);
     if (isUserLiked) {
       //찜하기 해제
-      return this.clubService.deleteLikedClub(club.id, user.id);
+      await this.clubService.deleteLikedClub(club.id, user.id);
+      return res.status(200).json({ message: '찜하기가 해제되었습니다.' });
     }
 
-    return await this.clubService.likeClub(club.id, user.id);
+    await this.clubService.likeClub(club.id, user.id);
+    return res.status(200).json({ message: '해당 클럽을 찜하였습니다.' });
+  }
+
+  @ApiOperation({
+    summary: '나가기',
+    description: '해당 클럽에서 탈퇴합니다.',
+  })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    required: true,
+    description: 'Club 모델의 Id값입니다.',
+    example: 1,
+  })
+  @Delete('/leave/:id')
+  async leaveClub(@Req() req: Request, @Res() res: Response) {
+    const user = req.user as User;
+    const userId = user.id;
+    const clubId = +req.params.id;
+
+    const club = await this.clubService.findClubById(clubId);
+    if (!club)
+      throw new HttpException(
+        `Could not find Club with id ${clubId}`,
+        HttpStatus.NOT_FOUND,
+      );
+    const joinedClub = club.UserJoinedClub.filter((x) => x.userId === userId);
+    if (joinedClub.length === 0)
+      throw new HttpException(
+        `You didn't join the club with id ${clubId}`,
+        HttpStatus.FORBIDDEN,
+      );
+    //해당 유저가 클럽 owner일 경우
+    if (club.owner === userId)
+      throw new HttpException(
+        `클럽장은 클럽을 나갈 수 없습니다.`,
+        HttpStatus.FORBIDDEN,
+      );
+    await this.clubService.leaveClub(clubId, userId);
+    return res.status(200).json({ message: '해당 클럽에서 탈퇴하였습니다.' });
   }
 }
 

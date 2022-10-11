@@ -115,4 +115,10 @@ export class ClubService {
       include: { User: true, Club: true },
     });
   }
+
+  async leaveClub(clubId: number, userId: string) {
+    return await this.prisma.userJoinedClub.delete({
+      where: { userId_clubId: { clubId, userId } },
+    });
+  }
 }

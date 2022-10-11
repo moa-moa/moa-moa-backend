@@ -275,21 +275,19 @@ export class ClubController {
         `Could not find Club with id ${clubId}`,
         HttpStatus.NOT_FOUND,
       );
-    //클럽에 유저가 포함되어있지 않은경우
-    else if (
-      club.UserJoinedClub.filter((x) => x.userId === userId).length === 0
-    )
+    const joinedClub = club.UserJoinedClub.filter((x) => x.userId === userId);
+    if (joinedClub.length === 0)
       throw new HttpException(
         `You didn't join the club with id ${clubId}`,
         HttpStatus.FORBIDDEN,
       );
     //해당 유저가 클럽 owner일 경우
-    else if (club.owner == userId)
+    if (club.owner === userId)
       throw new HttpException(
         `클럽장은 클럽을 나갈 수 없습니다.`,
         HttpStatus.FORBIDDEN,
       );
-    this.clubService.leaveClub(clubId, userId);
+    await this.clubService.leaveClub(clubId, userId);
     return res.status(200).json({ message: '해당 클럽에서 탈퇴하였습니다.' });
   }
 }

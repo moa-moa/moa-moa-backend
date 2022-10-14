@@ -44,14 +44,14 @@ export class AuthController {
 
     await this.userService.findByIdOrSaveOrTokenUpdate(userData);
 
-    res.cookie(
-      'refreshToken',
-      tokens.refreshToken,
-      setRefreshSecure(process.env.ENV),
-    );
+    res.cookie('refreshToken', tokens.refreshToken, 
+    {
+      httpOnly: process.env.ENV === 'dev',
+      secure: process.env.ENV !== 'dev',
+    });
 
-    // return res.status(200).json(tokens);
-    return res.status(200).redirect('http://localhost:3001/'); // webfront home
+     // return res.status(200).json(tokens);
+     return res.status(200).redirect('http://localhost:3001/'); // webfront home
   }
   @Get('logout')
   logout(@Req() req: Request) {
@@ -76,26 +76,13 @@ export class AuthController {
     const hashtedRt = await this.authService.preHash(tokens.refreshToken);
     await this.userService.updateHashedRefreshToken(checkUser.id, hashtedRt);
 
-    res.cookie(
-      'refreshToken',
-      tokens.refreshToken,
-      setRefreshSecure(process.env.ENV),
-    );
-
+    res.cookie('refreshToken', tokens.refreshToken, 
+    {
+      httpOnly: process.env.ENV === 'dev',
+      secure: process.env.ENV !== 'dev',
+    });
+    
     return res.status(200).json({ accessToken: tokens.accessToken });
   }
 }
 
-function setRefreshSecure(env: string) {
-  if (env === 'dev') {
-    return {
-      httpOnly: true,
-      secure: false,
-    };
-  } else {
-    return {
-      httpOnly: true,
-      secure: true,
-    };
-  }
-}

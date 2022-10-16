@@ -45,9 +45,10 @@ export class AuthController {
     await this.userService.findByIdOrSaveOrTokenUpdate(userData);
 
     res.cookie('refreshToken', tokens.refreshToken, {
-      httpOnly: true,
-      secure: true,
+      httpOnly: process.env.ENV === 'dev',
+      secure: process.env.ENV !== 'dev',
     });
+
     // return res.status(200).json(tokens);
     return res.status(200).redirect('http://localhost:3001/'); // webfront home
   }
@@ -75,9 +76,10 @@ export class AuthController {
     await this.userService.updateHashedRefreshToken(checkUser.id, hashtedRt);
 
     res.cookie('refreshToken', tokens.refreshToken, {
-      httpOnly: true,
-      secure: true,
+      httpOnly: process.env.ENV === 'dev',
+      secure: process.env.ENV !== 'dev',
     });
+
     return res.status(200).json({ accessToken: tokens.accessToken });
   }
 }

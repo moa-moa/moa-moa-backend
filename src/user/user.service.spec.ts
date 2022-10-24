@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
 import { PrismaModule } from '../common/prisma.module';
-import { PrismaClient } from '@prisma/client';
-import { User } from './model/user.model';
+import { PrismaClient, User } from '@prisma/client';
+//import { User } from './model/user.model';
 import { validMockUser } from '../../test/utils/mock-user';
 import { ImageModule } from '../image/image.module';
 

@@ -29,7 +29,7 @@ import { CreateClubDto } from './dto/create-club.dto';
 import { Club } from './model/club.model';
 import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
-import { Prisma, User } from '@prisma/client';
+import { Prisma, User, UserJoinedClub } from '@prisma/client';
 import { UpdateClubDto } from './dto/update-club.dto';
 
 @ApiTags('Club')
@@ -189,7 +189,7 @@ export class ClubController {
     example: 1,
   })
   @Post('/join/:id')
-  async joinClub(@Req() req: Request) {
+  async joinClub(@Req() req: Request): Promise<UserJoinedClub> {
     const user = req.user as User;
     const clubId = +req.params.id;
 
@@ -233,7 +233,6 @@ export class ClubController {
     const user = req.user as User;
     const clubId = +req.params.id;
 
-    console.log('clubid!!!: ', clubId);
     const club = await this.clubService.findClubById(clubId);
     if (!club)
       throw new HttpException(

@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Category, PrismaClient } from '@prisma/client';
-import { validMockCreateCategory } from '../../test/utils/mock-category';
+import { validMockCreateCategory1 } from '../../test/utils/mock-category';
 import { PrismaModule } from '../common/prisma.module';
 import { CategoryService } from './category.service';
 
@@ -24,7 +24,7 @@ describe('CategoryService', () => {
 
   describe('createCategory', () => {
     it('should be create a category with valid data', async () => {
-      const mockData = validMockCreateCategory();
+      const mockData = validMockCreateCategory1();
       testCategory = await service.createCategory(mockData);
 
       expect(testCategory.name).toEqual(mockData.name);
@@ -47,7 +47,7 @@ describe('CategoryService', () => {
 
   describe('updateUser', () => {
     it('sh ould be update a dcategory with valid data', async () => {
-      const mockCategory = validMockCreateCategory();
+      const mockCategory = validMockCreateCategory1();
       testCategory = await service.updateCategory(
         testCategory.id,
         mockCategory,

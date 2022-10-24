@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  HttpException,
-  HttpStatus,
-  Injectable,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Club, Prisma } from '@prisma/client';
 import { CategoryService } from '../category/category.service';
 import { PrismaService } from '../common/prisma.service';

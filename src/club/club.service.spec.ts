@@ -25,7 +25,6 @@ describe('ClubService', () => {
   let category2: Category;
   let categoryService: CategoryService;
   let user1: User;
-  let user2: User;
   let userService: UserService;
 
   const prismaClient = new PrismaClient();
@@ -114,13 +113,13 @@ describe('ClubService', () => {
 
   describe('join club', () => {
     it('sholud return error as the owner of the club', async () => {
-      let thrown: unknown;
       //TODO: 예외처리 함수 생성 후 수정하기
-      try {
-        const joinUser = await service.joinClub(testClub.id, user1.id);
-      } catch (e) {
-        thrown = e;
-      }
+      // let thrown: unknown;
+      // try {
+      //  await service.joinClub(testClub.id, user1.id);
+      // } catch (e) {
+      //   thrown = e;
+      // }
     });
   });
 

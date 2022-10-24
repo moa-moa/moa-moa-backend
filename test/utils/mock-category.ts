@@ -11,7 +11,6 @@ export const validMockCreateCategory2 = (): CreateCategoryDto => ({
   backColor: '#ffff00',
 });
 
-
 export const validMockUpdateCategory = (): UpdateCategoryDto => ({
   name: '일상',
   backColor: '#000000',

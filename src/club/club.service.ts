@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import { Club, Prisma } from '@prisma/client';
 import { CategoryService } from '../category/category.service';
 import { PrismaService } from '../common/prisma.service';
@@ -22,7 +27,7 @@ export class ClubService {
   }
 
   async findClubById(id: number) {
-    return await this.prisma.club.findUnique({
+    return await this.prisma.club.findUniqueOrThrow({
       where: { id },
       include: {
         UserJoinedClub: {
@@ -49,12 +54,16 @@ export class ClubService {
       throw new BadRequestException('invalid club title');
     }
 
-    const createMany: Prisma.ClubImageCreateManyClubInputEnvelope = {
-      data: createClubDto.imageIds.map((imageId) => {
-        return { imageId };
-      }),
-      skipDuplicates: true,
-    };
+    console.log('cr', createClubDto);
+    let createMany: Prisma.ClubImageCreateManyClubInputEnvelope;
+    if (createClubDto.imageIds !== undefined) {
+      createMany = {
+        data: createClubDto.imageIds.map((imageId) => {
+          return { imageId };
+        }),
+        skipDuplicates: true,
+      };
+    }
 
     //존재하는 categoryId인지 확인
     await this.categoryService.findCategoryById(createClubDto.categoryId);
@@ -97,6 +106,15 @@ export class ClubService {
   }
 
   async joinClub(clubId: number, userId: string) {
+    try {
+      await this.findClubById(clubId);
+    } catch (e: unknown) {
+      if (e instanceof Error && e.name === 'NotFoundError') {
+        throw new BadRequestException('invalid category ids');
+      }
+      throw e;
+    }
+
     return await this.prisma.userJoinedClub.create({
       data: { userId, clubId },
       include: { User: true, Club: true },

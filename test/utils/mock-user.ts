@@ -7,7 +7,6 @@ export const validMockUser = (
   email: 'test1@moa.com',
   provider: 'google',
   name: 'test1name',
-  ...fields,
   hashedRt: '123',
 });
 
@@ -18,7 +17,6 @@ export const validMockUser2 = (
   email: 'test2@moa.com',
   provider: 'google',
   name: 'test2name',
-  ...fields,
   hashedRt: '321',
 });
 
@@ -29,6 +27,5 @@ export const invalidMockUser = (
   email: '',
   name: '',
   provider: '',
-  ...fields,
   hashedRt: '',
 });

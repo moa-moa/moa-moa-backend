@@ -54,7 +54,6 @@ export class ClubService {
       throw new BadRequestException('invalid club title');
     }
 
-    console.log('cr', createClubDto);
     let createMany: Prisma.ClubImageCreateManyClubInputEnvelope;
     if (createClubDto.imageIds !== undefined) {
       createMany = {

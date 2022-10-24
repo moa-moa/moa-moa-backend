@@ -233,7 +233,6 @@ export class ClubController {
     const user = req.user as User;
     const clubId = +req.params.id;
 
-    console.log('clubid!!!: ', clubId);
     const club = await this.clubService.findClubById(clubId);
     if (!club)
       throw new HttpException(

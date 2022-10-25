@@ -134,10 +134,11 @@ export class ClubController {
 
       if (club.owner !== user.id)
         throw new HttpException('You are not Club owner', HttpStatus.FORBIDDEN);
-      else updateClubDto.owner = club.owner;
-      await this.imageService.updateImages(id, updateClubDto.imageIds);
+      updateClubDto.owner = club.owner;
+      if (updateClubDto.imageIds !== undefined)
+        await this.imageService.updateImages(id, updateClubDto.imageIds);
 
-      return this.clubService.updateClub(id, updateClubDto);
+      return await this.clubService.updateClub(id, updateClubDto);
     } catch (e) {
       // e instanceof Error 로는 catch 안됨
       if ((e as Error).name === 'NotFoundError') {

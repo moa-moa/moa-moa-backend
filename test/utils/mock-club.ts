@@ -22,4 +22,5 @@ export const validMockUpdateClub = (
   title: '업데이트한 클럽',
   description: '내용업뎃!',
   owner: userId,
+  imageIds,
 });

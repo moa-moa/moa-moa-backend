@@ -8,6 +8,7 @@ import { ClubModule } from './club/club.module';
 import { ImageModule } from './image/image.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { GlobalExceptionFilter } from './common/global-exception.filter';
 
 @Module({
   imports: [
@@ -21,6 +22,11 @@ import { join } from 'path';
     }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    {
+      provide: AppService,
+      useClass: GlobalExceptionFilter,
+    },
+  ],
 })
 export class AppModule {}

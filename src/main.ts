@@ -10,6 +10,7 @@ import { PrismaService } from './common/prisma.service';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import cookieParser from 'cookie-parser';
 import { join } from 'path';
+import { GlobalExceptionFilter } from './common/global-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -20,6 +21,7 @@ async function bootstrap() {
 
   setupSwagger(app);
 
+  app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -27,6 +29,7 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
   app.use(cookieParser());
   app.enableCors();
   const port = parseInt(process.env.PORT) || 3000;

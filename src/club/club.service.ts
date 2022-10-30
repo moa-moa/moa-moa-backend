@@ -104,7 +104,7 @@ export class ClubService {
       await this.findClubById(clubId);
     } catch (e: unknown) {
       if (e instanceof Error && e.name === 'NotFoundError') {
-        throw new BadRequestException('invalid category ids');
+        throw new BadRequestException('invalid club ids');
       }
       throw e;
     }

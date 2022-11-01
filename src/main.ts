@@ -22,8 +22,10 @@ async function bootstrap() {
 
   setupSwagger(app);
 
-  app.useGlobalFilters(new NotFoundExceptionFilter());
-  app.useGlobalFilters(new PrismaClientExceptionFilter());
+  app.useGlobalFilters(
+    new NotFoundExceptionFilter(),
+    new PrismaClientExceptionFilter(),
+  );
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

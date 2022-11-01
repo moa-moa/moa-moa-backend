@@ -10,7 +10,8 @@ import { PrismaService } from './common/prisma.service';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import cookieParser from 'cookie-parser';
 import { join } from 'path';
-import { GlobalExceptionFilter } from './common/global-exception.filter';
+import { NotFoundExceptionFilter } from './common/notfound-exception.filter';
+import { PrismaClientExceptionFilter } from './common/prisma-client-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -21,7 +22,8 @@ async function bootstrap() {
 
   setupSwagger(app);
 
-  app.useGlobalFilters(new GlobalExceptionFilter());
+  app.useGlobalFilters(new NotFoundExceptionFilter());
+  app.useGlobalFilters(new PrismaClientExceptionFilter());
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

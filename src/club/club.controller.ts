@@ -121,31 +121,18 @@ export class ClubController {
   @ApiOkResponse({ type: Club })
   @Patch(':id')
   async updateClub(@Req() req: Request, @Body() updateClubDto: UpdateClubDto) {
-    try {
-      const user = req.user as User;
-      const id = +req.params.id;
+    const user = req.user as User;
+    const id = +req.params.id;
 
-      const club = await this.clubService.findClubById(id);
-      if (!club)
-        throw new HttpException(
-          `Could not find Club with id ${id}`,
-          HttpStatus.NOT_FOUND,
-        );
+    const club = await this.clubService.findClubById(id);
 
-      if (club.owner !== user.id)
-        throw new HttpException('You are not Club owner', HttpStatus.FORBIDDEN);
-      updateClubDto.owner = club.owner;
-      if (updateClubDto.imageIds !== undefined)
-        await this.imageService.updateImages(id, updateClubDto.imageIds);
+    if (club.owner !== user.id)
+      throw new HttpException('You are not Club owner', HttpStatus.FORBIDDEN);
+    updateClubDto.owner = club.owner;
+    if (updateClubDto.imageIds !== undefined)
+      await this.imageService.updateImages(id, updateClubDto.imageIds);
 
-      return await this.clubService.updateClub(id, updateClubDto);
-    } catch (e) {
-      // e instanceof Error 로는 catch 안됨
-      if ((e as Error).name === 'NotFoundError') {
-        throw new NotFoundException(e);
-      }
-      throw e;
-    }
+    return await this.clubService.updateClub(id, updateClubDto);
   }
 
   @ApiOperation({
@@ -166,16 +153,11 @@ export class ClubController {
     const id = +req.params.id;
 
     const club = await this.clubService.findClubById(id);
-    if (!club)
-      throw new HttpException(
-        `Could not find Club with id ${id}`,
-        HttpStatus.NOT_FOUND,
-      );
 
     if (club.owner !== user.id)
       throw new HttpException('You are not Club owner', HttpStatus.FORBIDDEN);
 
-    return this.clubService.deleteClub(id);
+    return await this.clubService.deleteClub(id);
   }
 
   @ApiOperation({

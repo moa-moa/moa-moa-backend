@@ -89,11 +89,11 @@ export class CategoryController {
   })
   @ApiOkResponse({ type: Category })
   @Patch(':id')
-  updateCategory(
+  async updateCategory(
     @Param('id') id: number,
     @Body() updateCategoryDto: UpdateCategoryDto,
   ) {
-    return this.categoryService.updateCategory(id, updateCategoryDto);
+    return await this.categoryService.updateCategory(id, updateCategoryDto);
   }
 
   @ApiOperation({
@@ -109,7 +109,7 @@ export class CategoryController {
   })
   @ApiOkResponse({ type: Category })
   @Delete(':id')
-  deleteCategory(@Param('id') id: number) {
+  async deleteCategory(@Param('id') id: number) {
     return this.categoryService.deleteCategory(id);
   }
 }

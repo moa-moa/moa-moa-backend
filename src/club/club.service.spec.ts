@@ -111,18 +111,6 @@ describe('ClubService', () => {
     });
   });
 
-  describe('join club', () => {
-    it('sholud return error as the owner of the club', async () => {
-      //TODO: 예외처리 함수 생성 후 수정하기
-      // let thrown: unknown;
-      // try {
-      //  await service.joinClub(testClub.id, user1.id);
-      // } catch (e) {
-      //   thrown = e;
-      // }
-    });
-  });
-
   describe('delete club', () => {
     it('sholud return clubs', async () => {
       const deleteClub = await service.deleteClub(testClub.id);

@@ -100,14 +100,7 @@ export class ClubService {
   }
 
   async joinClub(clubId: number, userId: string) {
-    try {
-      await this.findClubById(clubId);
-    } catch (e: unknown) {
-      if (e instanceof Error && e.name === 'NotFoundError') {
-        throw new BadRequestException('invalid category ids');
-      }
-      throw e;
-    }
+    await this.findClubById(clubId);
 
     return await this.prisma.userJoinedClub.create({
       data: { userId, clubId },

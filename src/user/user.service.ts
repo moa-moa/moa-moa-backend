@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Prisma, User } from '@prisma/client';
 import * as argon from 'argon2';
 import { PrismaService } from '../common/prisma.service';
@@ -8,11 +8,11 @@ import { CreateUserDto } from './dto/create-user.dto';
 export class UserService {
   constructor(private readonly prisma: PrismaService) {}
 
-  findUsers(): Promise<User[]> {
-    return this.prisma.user.findMany();
+  async findUsers(): Promise<User[]> {
+    return await this.prisma.user.findMany();
   }
 
-  findUserById(id: string, options?: boolean): Promise<User> {
+  async findUserById(id: string, options?: boolean): Promise<User> {
     const query: Prisma.UserFindUniqueArgs = {
       where: {
         id,
@@ -26,7 +26,7 @@ export class UserService {
       };
     }
 
-    return this.prisma.user.findUnique(query);
+    return await this.prisma.user.findUnique(query);
   }
 
   async findByIdOrSaveOrTokenUpdate(data: CreateUserDto) {
@@ -70,8 +70,7 @@ export class UserService {
   }
 
   async findByIdAndCheckRT(id: string, rt: string): Promise<User> {
-    const user = await this.prisma.user.findUnique({ where: { id } });
-    if (!user) throw new UnauthorizedException();
+    const user = await this.prisma.user.findUniqueOrThrow({ where: { id } });
 
     const match = await argon.verify(user.hashedRt, rt);
     if (match) return user;

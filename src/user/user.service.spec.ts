@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
 import { PrismaModule } from '../common/prisma.module';
 import { PrismaClient, User } from '@prisma/client';
-//import { User } from './model/user.model';
 import { validMockUser } from '../../test/utils/mock-user';
 import { ImageModule } from '../image/image.module';
 
@@ -37,6 +36,15 @@ describe('UserService', () => {
     it('should return users', async () => {
       const users = await service.findUsers();
       expect(users).toBeInstanceOf(Array);
+    });
+  });
+
+  describe('findUserById', () => {
+    it('should return user by Id', async () => {
+      const user = await service.findUserById(testUser.id);
+
+      expect(user.id).toEqual(testUser.id);
+      expect(user.name).toEqual(testUser.name);
     });
   });
 
